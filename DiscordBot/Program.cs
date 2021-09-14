@@ -1,3 +1,5 @@
+using Discord.Commands;
+using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -14,13 +16,15 @@ namespace DiscordBot
             Host.CreateDefaultBuilder(args)
                 .ConfigureServices((hostContext, services) =>
                 {
-                    services.AddHostedService<Worker>();
-                    services.ConfigureBotServices();
+                    services.AddHostedService<Worker>()
+                            .ConfigureBotServices();
                 });
 
         private static void ConfigureBotServices(this IServiceCollection services)
         {
-
+            services.AddSingleton<DiscordSocketClient>()
+                    .AddSingleton<CommandHandler>()
+                    .AddSingleton<CommandService>();
         }
     }
 }

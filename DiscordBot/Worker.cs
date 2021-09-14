@@ -11,12 +11,15 @@ namespace DiscordBot
     public class Worker : BackgroundService
     {
         private readonly ILogger<Worker> _logger;
+        private readonly DiscordSocketClient _client;
+        private readonly CommandHandler _commandHandler;
         private readonly string _discordBotToken;
-        private DiscordSocketClient _client;
 
-        public Worker(ILogger<Worker> logger, IConfiguration configuration)
+        public Worker(ILogger<Worker> logger, DiscordSocketClient client, CommandHandler commandHandler, IConfiguration configuration)
         {
             _logger = logger;
+            _client = client;
+            _commandHandler = commandHandler;
             _discordBotToken = configuration["DiscordBotToken"];
         }
 
@@ -24,10 +27,10 @@ namespace DiscordBot
         {
             _logger.LogInformation("Starting discord bot");
 
-            _client = new DiscordSocketClient();
             _client.Log += Client_Log;
 
             await _client.LoginAsync(TokenType.Bot, _discordBotToken);
+            await _commandHandler.InstallCommandsAsync();
             await _client.StartAsync();
         }
 
