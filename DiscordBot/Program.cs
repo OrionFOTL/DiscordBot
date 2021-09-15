@@ -23,7 +23,7 @@ namespace DiscordBot
         private static void ConfigureBotServices(this IServiceCollection services)
         {
             services.AddSingleton<DiscordSocketClient>()
-                    .AddSingleton<CommandHandler>()
+                    .AddSingleton<MessageHandler>()
                     .AddSingleton<CommandService>();
         }
     }

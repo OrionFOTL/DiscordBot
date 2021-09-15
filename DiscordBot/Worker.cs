@@ -12,14 +12,14 @@ namespace DiscordBot
     {
         private readonly ILogger<Worker> _logger;
         private readonly DiscordSocketClient _client;
-        private readonly CommandHandler _commandHandler;
+        private readonly MessageHandler _messageHandler;
         private readonly string _discordBotToken;
 
-        public Worker(ILogger<Worker> logger, DiscordSocketClient client, CommandHandler commandHandler, IConfiguration configuration)
+        public Worker(ILogger<Worker> logger, DiscordSocketClient client, MessageHandler messageHandler, IConfiguration configuration)
         {
             _logger = logger;
             _client = client;
-            _commandHandler = commandHandler;
+            _messageHandler = messageHandler;
             _discordBotToken = configuration["DiscordBotToken"];
         }
 
@@ -30,7 +30,7 @@ namespace DiscordBot
             _client.Log += Client_Log;
 
             await _client.LoginAsync(TokenType.Bot, _discordBotToken);
-            await _commandHandler.InstallCommandsAsync();
+            await _messageHandler.InstallCommandsAsync();
             await _client.StartAsync();
         }
 

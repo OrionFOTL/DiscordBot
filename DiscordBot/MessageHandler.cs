@@ -7,7 +7,7 @@ using DiscordBot.Commands;
 
 namespace DiscordBot
 {
-    public class CommandHandler
+    public class MessageHandler
     {
         private const char _commandPrefix = '$';
 
@@ -15,7 +15,7 @@ namespace DiscordBot
         private readonly CommandService _commands;
         private readonly IServiceProvider _serviceProvider;
 
-        public CommandHandler(DiscordSocketClient client, CommandService commands, IServiceProvider serviceProvider)
+        public MessageHandler(DiscordSocketClient client, CommandService commands, IServiceProvider serviceProvider)
         {
             _client = client;
             _commands = commands;
@@ -24,12 +24,12 @@ namespace DiscordBot
 
         public async Task InstallCommandsAsync()
         {
-            _client.MessageReceived += HandleCommandAsync;
+            _client.MessageReceived += HandleMessageAsync;
 
             await _commands.AddModulesAsync(typeof(EggplantModule).Assembly, _serviceProvider);
         }
 
-        private async Task HandleCommandAsync(SocketMessage message)
+        private async Task HandleMessageAsync(SocketMessage message)
         {
             if (message is not SocketUserMessage userMessage || userMessage.Source != MessageSource.User)
             {
