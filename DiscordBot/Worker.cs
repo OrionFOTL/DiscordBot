@@ -39,7 +39,7 @@ namespace DiscordBot
         public override async Task StopAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation("Stopping bot");
-            await _client.LogoutAsync();
+            await _client.StopAsync();
         }
 
         private async Task Client_Log(LogMessage arg)
