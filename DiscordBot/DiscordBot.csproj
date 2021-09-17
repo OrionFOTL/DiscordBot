@@ -14,6 +14,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\DiscordBot.Clients.Interface\DiscordBot.Clients.Interface.csproj" />
+    <ProjectReference Include="..\DiscordBot.Clients\DiscordBot.Clients.csproj" />
     <ProjectReference Include="..\DiscordBot.Commands\DiscordBot.Commands.csproj" />
   </ItemGroup>
 </Project>
