@@ -78,7 +78,7 @@ namespace DiscordBot.Commands
                         mp.Embed = new EmbedBuilder().WithTitle("No further images found.").Build();
                         mp.Components = new ComponentBuilder()
                             .WithButton(customId: $"paginator previous {requestedPage}", style: ButtonStyle.Secondary, emote: new Emoji("◀"), disabled: requestedPage <= 1)
-                            .WithButton(customId: $"paginator next {requestedPage}", style: ButtonStyle.Secondary, emote: new Emoji("▶"))
+                            .WithButton(customId: $"paginator next {requestedPage}", style: ButtonStyle.Secondary, emote: new Emoji("▶"), disabled: forward)
                             .Build();
                     });
                     return;
@@ -107,6 +107,7 @@ namespace DiscordBot.Commands
             var channelNsfw = ((SocketTextChannel)Context.Channel).IsNsfw;
 
             Task<IUserMessage> fetchingReplyTask = Context.Message.ReplyAsync(embed: new EmbedBuilder().WithDescription("Fetching...").Build(), allowedMentions: AllowedMentions.None);
+            Task<IEnumerable<string>> topTagsTask = _booruClient.GetTopTags(tags.First());
 
             Post image = await _booruClient.GetImageAsync(
                 amount: 1,
@@ -117,10 +118,15 @@ namespace DiscordBot.Commands
                 tags);
 
             IUserMessage fetchingReply = await fetchingReplyTask;
+            IEnumerable<string> topTags = await topTagsTask;
 
             if (image is null)
             {
-                await fetchingReply.ModifyAsync(m => m.Embed = new EmbedBuilder().WithDescription("No images found.").Build());
+                await fetchingReply.ModifyAsync(m =>
+                {
+                    m.Content = $"You might've meant: {string.Join(", ", topTags.Select(t => $"`{t}`"))}";
+                    m.Embed = new EmbedBuilder().WithDescription("No images found.").Build();
+                });
                 return;
             }
 
@@ -133,6 +139,7 @@ namespace DiscordBot.Commands
 
             await fetchingReply.ModifyAsync(m =>
             {
+                m.Content = $"You might've meant: {string.Join(", ", topTags.Select(t => $"`{t}`"))}";
                 m.Embed = imageEmbed.Build();
                 m.Components = new ComponentBuilder()
                     .WithButton(customId: $"paginator previous {startingPage}", style: ButtonStyle.Secondary, emote: new Emoji("◀"), disabled: true)

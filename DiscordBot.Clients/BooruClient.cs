@@ -23,6 +23,7 @@ namespace DiscordBot.Clients
             _booru = new Gelbooru();
 
         }
+
         public async Task<IEnumerable<Post>> GetImagesAsync(int amount, int page, bool top = true, bool noVideo = true, bool allowNsfw = false, params string[] contentTags)
         {
             var tags = contentTags.ToList();
@@ -62,11 +63,23 @@ namespace DiscordBot.Clients
                 return Array.Empty<Post>();
             }
         }
+
         public async Task<Post> GetImageAsync(int amount, int page, bool top = true, bool noVideo = true, bool allowNsfw = false, params string[] contentTags)
         {
             IEnumerable<Post> posts = await GetImagesAsync(amount, page, top, noVideo, allowNsfw, contentTags);
 
             return posts.FirstOrDefault();
+        }
+
+        public async Task<IEnumerable<string>> GetTopTags(string tag)
+        {
+            var foundTags = await _booru.TagListAsync(tag.Split('_').First() + "%");
+
+            return foundTags
+                .OrderByDescending(t => t.Count)
+                .Where(t => t.Name != tag)
+                .Take(3)
+                .Select(t => t.Name);
         }
     }
 }

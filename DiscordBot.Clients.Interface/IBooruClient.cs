@@ -9,5 +9,7 @@ namespace DiscordBot.Clients.Interface
         Task<IEnumerable<Post>> GetImagesAsync(int amount, int page, bool top = true, bool noVideo = true, bool allowNsfw = false, params string[] contentTags);
 
         Task<Post> GetImageAsync(int amount, int page, bool top = true, bool noVideo = true, bool allowNsfw = false, params string[] contentTags);
+
+        Task<IEnumerable<string>> GetTopTags(string tag);
     }
 }
