@@ -18,10 +18,10 @@ namespace DiscordBot.Commands
         private readonly IBooruClient _booruClient;
         private readonly DiscordSocketClient _discordClient;
 
-        public GelbooruModule(ILogger<GelbooruModule> logger, IBooruClient client, DiscordSocketClient discordClient)
+        public GelbooruModule(ILogger<GelbooruModule> logger, DiscordSocketClient discordClient, IBooruClient booruClient)
         {
             _logger = logger;
-            _booruClient = client;
+            _booruClient = booruClient;
             _discordClient = discordClient;
         }
 
@@ -68,9 +68,7 @@ namespace DiscordBot.Commands
 
                 int requestedPage = forward ? Convert.ToInt32(customValues.Last()) + 1 : Convert.ToInt32(customValues.Last()) - 1;
 
-                var updatedImage = (await _booruClient.GetImagesAsync(amount: 1, page: requestedPage, top: true, noVideo: true, allowNsfw: channelNsfw, contentTags: tags.Split(' '))).First();
-
-                _logger.LogInformation($"Got next image: {updatedImage.PostUrl} | {updatedImage.FileUrl}");
+                var updatedImage = await _booruClient.GetImageAsync(amount: 1, page: requestedPage, top: true, noVideo: true, allowNsfw: channelNsfw, contentTags: tags.Split(' '));
 
                 await loaderMessage;
                 await interaction.ModifyOriginalResponseAsync(mp =>
@@ -95,7 +93,9 @@ namespace DiscordBot.Commands
             int startingPage = 1;
             var channelNsfw = ((SocketTextChannel)Context.Channel).IsNsfw;
 
-            Task<IEnumerable<Post>> images = _booruClient.GetImagesAsync(
+            Task<IUserMessage> fetchingReplyTask = Context.Message.ReplyAsync(embed: new EmbedBuilder().WithDescription("Fetching...").Build(), allowedMentions: AllowedMentions.None);
+
+            Post image = await _booruClient.GetImageAsync(
                 amount: 1,
                 page: startingPage,
                 top: true,
@@ -103,27 +103,26 @@ namespace DiscordBot.Commands
                 allowNsfw: channelNsfw,
                 tags);
 
-            var embed = new EmbedBuilder
+            IUserMessage fetchingReply = await fetchingReplyTask;
+
+            if (image is null)
             {
-                Description = "Fetching..."
-            };
+                await fetchingReply.ModifyAsync(m => m.Embed = new EmbedBuilder().WithDescription("No images found.").Build());
+                return;
+            }
 
-            IUserMessage reply = await Context.Message.ReplyAsync(embed: embed.Build(), allowedMentions: AllowedMentions.None);
-
-            Post firstImage = (await images).Single();
-
-            embed = new EmbedBuilder
+            var imageEmbed = new EmbedBuilder
             {
                 Title = "Top #1 art:",
-                Url = firstImage.PostUrl,
-                ImageUrl = firstImage.FileUrl.ToString(),
+                Url = image.PostUrl,
+                ImageUrl = image.FileUrl.ToString(),
             };
 
-            await reply.ModifyAsync(m =>
+            await fetchingReply.ModifyAsync(m =>
             {
-                m.Embed = embed.Build();
+                m.Embed = imageEmbed.Build();
                 m.Components = new ComponentBuilder()
-                    .WithButton(customId: $"paginator previous {startingPage}", style: ButtonStyle.Secondary, emote: new Emoji("◀"))
+                    .WithButton(customId: $"paginator previous {startingPage}", style: ButtonStyle.Secondary, emote: new Emoji("◀"), disabled: true)
                     .WithButton(customId: $"paginator next {startingPage}", style: ButtonStyle.Secondary, emote: new Emoji("▶"))
                     .Build();
             });

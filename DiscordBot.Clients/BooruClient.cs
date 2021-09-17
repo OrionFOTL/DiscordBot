@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using BooruDex.Booru;
 using BooruDex.Booru.Client;
+using BooruDex.Exceptions;
 using DiscordBot.Clients.Interface;
 using DiscordBot.Model;
 using Microsoft.Extensions.Logging;
@@ -43,16 +44,29 @@ namespace DiscordBot.Clients
                 tags.Add("rating:safe");
             }
 
-            var posts = await _booru.PostListAsync((byte)amount, tags.ToArray(), (uint)page);
-
-            return posts.Select(p => new Post
+            try
             {
-                PostUrl = p.PostUrl,
-                FileUrl = p.FileUrl,
-                PreviewUrl = p.PreviewUrl,
-                Tags = p.Tags,
-                Source = p.Source
-            });
+                var posts = await _booru.PostListAsync((byte)amount, tags.ToArray(), (uint)page);
+
+                return posts.Select(p => new Post
+                {
+                    PostUrl = p.PostUrl,
+                    FileUrl = p.FileUrl,
+                    PreviewUrl = p.PreviewUrl,
+                    Tags = p.Tags,
+                    Source = p.Source
+                });
+            }
+            catch (SearchNotFoundException)
+            {
+                return Array.Empty<Post>();
+            }
+        }
+        public async Task<Post> GetImageAsync(int amount, int page, bool top = true, bool noVideo = true, bool allowNsfw = false, params string[] contentTags)
+        {
+            IEnumerable<Post> posts = await GetImagesAsync(amount, page, top, noVideo, allowNsfw, contentTags);
+
+            return posts.FirstOrDefault();
         }
     }
 }
