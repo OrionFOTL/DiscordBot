@@ -69,8 +69,21 @@ namespace DiscordBot.Commands
                 int requestedPage = forward ? Convert.ToInt32(customValues.Last()) + 1 : Convert.ToInt32(customValues.Last()) - 1;
 
                 var updatedImage = await _booruClient.GetImageAsync(amount: 1, page: requestedPage, top: true, noVideo: true, allowNsfw: channelNsfw, contentTags: tags.Split(' '));
-
                 await loaderMessage;
+
+                if (updatedImage is null)
+                {
+                    await interaction.ModifyOriginalResponseAsync(mp =>
+                    {
+                        mp.Embed = new EmbedBuilder().WithTitle("No further images found.").Build();
+                        mp.Components = new ComponentBuilder()
+                            .WithButton(customId: $"paginator previous {requestedPage}", style: ButtonStyle.Secondary, emote: new Emoji("◀"), disabled: requestedPage <= 1)
+                            .WithButton(customId: $"paginator next {requestedPage}", style: ButtonStyle.Secondary, emote: new Emoji("▶"))
+                            .Build();
+                    });
+                    return;
+                }
+
                 await interaction.ModifyOriginalResponseAsync(mp =>
                 {
                     mp.Embed = new EmbedBuilder
@@ -80,7 +93,7 @@ namespace DiscordBot.Commands
                         ImageUrl = updatedImage.FileUrl.ToString(),
                     }.Build();
                     mp.Components = new ComponentBuilder()
-                        .WithButton(customId: $"paginator previous {requestedPage}", style: ButtonStyle.Secondary, emote: new Emoji("◀"))
+                        .WithButton(customId: $"paginator previous {requestedPage}", style: ButtonStyle.Secondary, emote: new Emoji("◀"), disabled: requestedPage <= 1)
                         .WithButton(customId: $"paginator next {requestedPage}", style: ButtonStyle.Secondary, emote: new Emoji("▶"))
                         .Build();
                 });
