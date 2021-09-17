@@ -35,7 +35,7 @@ namespace DiscordBot
 
         private async Task CommandExecuted(Optional<CommandInfo> commandInfo, ICommandContext commandContext, IResult result)
         {
-            if (!result.IsSuccess)
+            if (!result.IsSuccess && result.Error != CommandError.UnknownCommand)
             {
                 _logger.LogError(result.ErrorReason);
             }
