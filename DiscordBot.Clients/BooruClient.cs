@@ -77,7 +77,7 @@ namespace DiscordBot.Clients
 
             return foundTags
                 .OrderByDescending(t => t.Count)
-                .Where(t => t.Name != tag)
+                .Where(t => t.Name != tag.ToLower())
                 .Take(3)
                 .Select(t => t.Name);
         }

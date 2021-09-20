@@ -16,12 +16,14 @@ namespace DiscordBot.Commands
     {
         private readonly ILogger<GelbooruModule> _logger;
         private readonly IBooruClient _booruClient;
+        private readonly ISauceClient _sauceClient;
         private readonly DiscordSocketClient _discordClient;
 
-        public GelbooruModule(ILogger<GelbooruModule> logger, DiscordSocketClient discordClient, IBooruClient booruClient)
+        public GelbooruModule(ILogger<GelbooruModule> logger, DiscordSocketClient discordClient, IBooruClient booruClient, ISauceClient sauceClient)
         {
             _logger = logger;
             _booruClient = booruClient;
+            _sauceClient = sauceClient;
             _discordClient = discordClient;
         }
 
@@ -40,7 +42,52 @@ namespace DiscordBot.Commands
         {
             string[] customValues = interaction.Data.CustomId.Split(' ');
 
-            if (customValues.First() == "paginator")
+            if (customValues.First() == "sauce")
+            {
+                int currentPage = Convert.ToInt32(customValues.Last());
+
+                var buttons = new ComponentBuilder()
+                    .WithButton(customId: $"paginator previous {currentPage}", style: ButtonStyle.Secondary, emote: new Emoji("◀"))
+                    .WithButton(customId: $"sauce", style: ButtonStyle.Secondary, emote: new Emoji("🍝"), label: "Sauce", disabled: true)
+                    .WithButton(customId: $"paginator next {currentPage}", style: ButtonStyle.Secondary, emote: new Emoji("▶"))
+                    .Build();
+
+                Task loaderMessageTask = interaction.Message.ModifyAsync(mp =>
+                {
+                    mp.Embed = interaction.Message.Embeds.First()
+                        .ToEmbedBuilder()
+                        .WithDescription("Fetching sauce... ⏳")
+                        .Build();
+                    mp.Components = buttons;
+                });
+
+                IEnumerable<SauceData> sauces = await _sauceClient.GetSauce(interaction.Message.Embeds.First().Image.Value.Url);
+
+                var saucesFields = sauces.Select(s =>
+                {
+                    string postTitle = string.IsNullOrEmpty(s.Title) ? "Post" : s.Title;
+                    string artistLink = string.IsNullOrEmpty(s.ArtistId) ? null : @"https://www.pixiv.net/member.php?id=" + s.ArtistId;
+                    string authorline = string.IsNullOrEmpty(s.ArtistName) ? null : $" by [{s.ArtistName}]({artistLink})";
+
+                    return new EmbedFieldBuilder
+                    {
+                        Name = s.SiteName,
+                        Value = $"[{postTitle}]({s.SourcePostUrl})" + authorline,
+                        IsInline = true,
+                    };
+                });
+
+                await interaction.ModifyOriginalResponseAsync(mp =>
+                {
+                    mp.Embed = interaction.Message.Embeds.First()
+                        .ToEmbedBuilder()
+                        .WithDescription(saucesFields.Any() ? "Sauce:" : "No sauces found")
+                        .WithFields(saucesFields)
+                        .Build();
+                    mp.Components = buttons;
+                });
+            }
+            else if (customValues.First() == "paginator")
             {
                 var invokerMessage = await interaction.Channel.GetMessageAsync(interaction.Message.Reference.MessageId.Value);
                 if (interaction.User.Id != invokerMessage.Author.Id)
@@ -59,6 +106,7 @@ namespace DiscordBot.Commands
                         .Build();
                     mp.Components = new ComponentBuilder()
                         .WithButton(customId: "previous", style: ButtonStyle.Secondary, emote: new Emoji("◀"), disabled: true)
+                        .WithButton(customId: "sauce", style: ButtonStyle.Secondary, emote: new Emoji("🍝"), label: "Sauce", disabled: true)
                         .WithButton(customId: "next", style: ButtonStyle.Secondary, emote: new Emoji("▶"), disabled: true)
                         .Build();
                 });
@@ -78,6 +126,7 @@ namespace DiscordBot.Commands
                         mp.Embed = new EmbedBuilder().WithTitle("No further images found.").Build();
                         mp.Components = new ComponentBuilder()
                             .WithButton(customId: $"paginator previous {requestedPage}", style: ButtonStyle.Secondary, emote: new Emoji("◀"), disabled: requestedPage <= 1)
+                            .WithButton(customId: "sauce", style: ButtonStyle.Secondary, emote: new Emoji("🍝"), label: "Sauce", disabled: true)
                             .WithButton(customId: $"paginator next {requestedPage}", style: ButtonStyle.Secondary, emote: new Emoji("▶"), disabled: forward)
                             .Build();
                     });
@@ -94,6 +143,7 @@ namespace DiscordBot.Commands
                     }.Build();
                     mp.Components = new ComponentBuilder()
                         .WithButton(customId: $"paginator previous {requestedPage}", style: ButtonStyle.Secondary, emote: new Emoji("◀"), disabled: requestedPage <= 1)
+                        .WithButton(customId: $"sauce {requestedPage}", style: ButtonStyle.Secondary, emote: new Emoji("🍝"), label: "Sauce")
                         .WithButton(customId: $"paginator next {requestedPage}", style: ButtonStyle.Secondary, emote: new Emoji("▶"))
                         .Build();
                 });
@@ -143,6 +193,7 @@ namespace DiscordBot.Commands
                 m.Embed = imageEmbed.Build();
                 m.Components = new ComponentBuilder()
                     .WithButton(customId: $"paginator previous {startingPage}", style: ButtonStyle.Secondary, emote: new Emoji("◀"), disabled: true)
+                    .WithButton(customId: $"sauce {startingPage}", style: ButtonStyle.Secondary, emote: new Emoji("🍝"), label: "Sauce")
                     .WithButton(customId: $"paginator next {startingPage}", style: ButtonStyle.Secondary, emote: new Emoji("▶"))
                     .Build();
             });

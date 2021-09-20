@@ -27,7 +27,8 @@ namespace DiscordBot
             services.AddSingleton<DiscordSocketClient>()
                     .AddSingleton<MessageHandler>()
                     .AddSingleton<CommandService>()
-                    .AddSingleton<IBooruClient, BooruClient>();
+                    .AddSingleton<IBooruClient, BooruClient>()
+                    .AddSingleton<ISauceClient, SauceClient>();
         }
     }
 }
