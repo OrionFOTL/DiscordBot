@@ -1,64 +1,60 @@
-﻿using System;
-using System.Threading.Tasks;
-using Discord;
+﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using DiscordBot.Commands;
-using Microsoft.Extensions.Logging;
 
-namespace DiscordBot
+namespace DiscordBot;
+
+public class MessageHandler
 {
-    public class MessageHandler
+    private const char _commandPrefix = '$';
+
+    private readonly ILogger<MessageHandler> _logger;
+    private readonly DiscordSocketClient _client;
+    private readonly CommandService _commands;
+    private readonly IServiceProvider _serviceProvider;
+
+    public MessageHandler(ILogger<MessageHandler> logger, DiscordSocketClient client, CommandService commands, IServiceProvider serviceProvider)
     {
-        private const char _commandPrefix = '$';
+        _logger = logger;
+        _client = client;
+        _commands = commands;
+        _serviceProvider = serviceProvider;
+    }
 
-        private readonly ILogger<MessageHandler> _logger;
-        private readonly DiscordSocketClient _client;
-        private readonly CommandService _commands;
-        private readonly IServiceProvider _serviceProvider;
+    public async Task InstallCommandsAsync()
+    {
+        _commands.CommandExecuted += CommandExecuted;
+        _client.MessageReceived += HandleMessageAsync;
 
-        public MessageHandler(ILogger<MessageHandler> logger, DiscordSocketClient client, CommandService commands, IServiceProvider serviceProvider)
+        await _commands.AddModulesAsync(typeof(EggplantModule).Assembly, _serviceProvider);
+    }
+
+    private async Task CommandExecuted(Optional<CommandInfo> commandInfo, ICommandContext commandContext, IResult result)
+    {
+        if (!result.IsSuccess && result.Error != CommandError.UnknownCommand)
         {
-            _logger = logger;
-            _client = client;
-            _commands = commands;
-            _serviceProvider = serviceProvider;
+            _logger.LogError(result.ErrorReason);
         }
 
-        public async Task InstallCommandsAsync()
-        {
-            _commands.CommandExecuted += CommandExecuted;
-            _client.MessageReceived += HandleMessageAsync;
+        await Task.CompletedTask;
+    }
 
-            await _commands.AddModulesAsync(typeof(EggplantModule).Assembly, _serviceProvider);
+    private async Task HandleMessageAsync(SocketMessage message)
+    {
+        if (message is not SocketUserMessage userMessage || userMessage.Source != MessageSource.User)
+        {
+            return;
         }
 
-        private async Task CommandExecuted(Optional<CommandInfo> commandInfo, ICommandContext commandContext, IResult result)
+        var commandStartPos = 0;
+        if (!userMessage.HasCharPrefix(_commandPrefix, ref commandStartPos))
         {
-            if (!result.IsSuccess && result.Error != CommandError.UnknownCommand)
-            {
-                _logger.LogError(result.ErrorReason);
-            }
-
-            await Task.CompletedTask;
+            //return;
         }
 
-        private async Task HandleMessageAsync(SocketMessage message)
-        {
-            if (message is not SocketUserMessage userMessage || userMessage.Source != MessageSource.User)
-            {
-                return;
-            }
+        var commandContext = new SocketCommandContext(_client, userMessage);
 
-            var commandStartPos = 0;
-            if (!userMessage.HasCharPrefix(_commandPrefix, ref commandStartPos))
-            {
-                //return;
-            }
-
-            var commandContext = new SocketCommandContext(_client, userMessage);
-
-            await _commands.ExecuteAsync(commandContext, commandStartPos, _serviceProvider);
-        }
+        await _commands.ExecuteAsync(commandContext, commandStartPos, _serviceProvider);
     }
 }
