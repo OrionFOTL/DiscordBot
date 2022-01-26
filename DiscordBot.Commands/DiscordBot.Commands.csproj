@@ -1,17 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Discord.Net.Labs" Version="3.0.3" />
+    <PackageReference Include="Discord.Net" Version="3.2.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\DiscordBot.Clients.Interface\DiscordBot.Clients.Interface.csproj" />
-    <ProjectReference Include="..\DiscordBot.Model\DiscordBot.Model.csproj" />
   </ItemGroup>
 
 </Project>

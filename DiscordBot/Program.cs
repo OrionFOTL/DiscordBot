@@ -1,34 +1,39 @@
+using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using DiscordBot.Clients;
 using DiscordBot.Clients.Interface;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 
-namespace DiscordBot
+namespace DiscordBot;
+
+public static class Program
 {
-    public static class Program
+    public static void Main(string[] args)
     {
-        public static void Main(string[] args)
-        {
-            CreateHostBuilder(args).Build().Run();
-        }
+        CreateHostBuilder(args).Build().Run();
+    }
 
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .ConfigureServices((hostContext, services) =>
-                {
-                    services.AddHostedService<Worker>()
-                            .ConfigureBotServices();
-                });
+    public static IHostBuilder CreateHostBuilder(string[] args) =>
+        Host.CreateDefaultBuilder(args)
+            .ConfigureServices((hostContext, services) =>
+            {
+                services.AddHostedService<Worker>()
+                        .ConfigureBotServices();
+            });
 
-        private static void ConfigureBotServices(this IServiceCollection services)
+    private static void ConfigureBotServices(this IServiceCollection services)
+    {
+        DiscordSocketConfig clientConfig = new()
         {
-            services.AddSingleton<DiscordSocketClient>()
-                    .AddSingleton<MessageHandler>()
-                    .AddSingleton<CommandService>()
-                    .AddSingleton<IBooruClient, BooruClient>()
-                    .AddSingleton<ISauceClient, SauceClient>();
-        }
+            GatewayIntents = GatewayIntents.AllUnprivileged
+                             & ~GatewayIntents.GuildScheduledEvents
+                             & ~GatewayIntents.GuildInvites
+        };
+
+        services.AddSingleton(new DiscordSocketClient(clientConfig))
+                .AddSingleton<MessageHandler>()
+                .AddSingleton<CommandService>()
+                .AddSingleton<IBooruClient, BooruClient>()
+                .AddSingleton<ISauceClient, SauceClient>();
     }
 }
