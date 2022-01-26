@@ -35,6 +35,6 @@ public class GreeterInteractionModule : ModuleBase<SocketCommandContext>
         var builder = new ComponentBuilder()
             .WithButton("next", "my-id", style: ButtonStyle.Primary, emote: new Emoji("😊"));
 
-        await ReplyAsync("Here's a button!", component: builder.Build());
+        await ReplyAsync("Here's a button!", components: builder.Build());
     }
 }

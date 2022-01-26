@@ -1,3 +1,4 @@
+using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using DiscordBot.Clients;
@@ -22,7 +23,14 @@ public static class Program
 
     private static void ConfigureBotServices(this IServiceCollection services)
     {
-        services.AddSingleton<DiscordSocketClient>()
+        DiscordSocketConfig clientConfig = new()
+        {
+            GatewayIntents = GatewayIntents.AllUnprivileged
+                             & ~GatewayIntents.GuildScheduledEvents
+                             & ~GatewayIntents.GuildInvites
+        };
+
+        services.AddSingleton(new DiscordSocketClient(clientConfig))
                 .AddSingleton<MessageHandler>()
                 .AddSingleton<CommandService>()
                 .AddSingleton<IBooruClient, BooruClient>()
