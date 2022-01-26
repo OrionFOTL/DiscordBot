@@ -35,7 +35,7 @@ public class SauceClient : ISauceClient
         return sauces.Select(s => new SauceData
         {
             Title = s.Properties.FirstOrDefault(p => p.Name == "Title" || (s.DatabaseName == "E-hentai" && p.Name == "Source"))?.Value,
-            ArtistName = s.Properties.FirstOrDefault(p => p.Name == "MemberName" || p.Name == "Creator")?.Value,
+            ArtistName = s.Properties.FirstOrDefault(p => p.Name is "MemberName" or "Creator")?.Value,
             ArtistId = s.Properties.FirstOrDefault(p => p.Name == "MemberId")?.Value,
             SourcePostUrl = s.DatabaseName == "E-hentai" ? Uri.EscapeUriString("https://e-hentai.org/?f_search=" + s.InnerSource) : s.SourceURL,
             ThumbnailUrl = s.ThumbnailURL,
