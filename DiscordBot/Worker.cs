@@ -29,7 +29,7 @@ public class Worker : BackgroundService
         await _client.StartAsync();
     }
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken) => await Task.CompletedTask;
+    protected override Task ExecuteAsync(CancellationToken stoppingToken) => Task.CompletedTask;
 
     public override async Task StopAsync(CancellationToken cancellationToken)
     {
@@ -37,9 +37,9 @@ public class Worker : BackgroundService
         await _client.StopAsync();
     }
 
-    private async Task Client_Log(LogMessage arg)
+    private Task Client_Log(LogMessage arg)
     {
         _logger.LogInformation(arg.ToString());
-        await Task.CompletedTask;
+        return Task.CompletedTask;
     }
 }

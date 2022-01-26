@@ -30,14 +30,14 @@ public class MessageHandler
         await _commands.AddModulesAsync(typeof(EggplantModule).Assembly, _serviceProvider);
     }
 
-    private async Task CommandExecuted(Optional<CommandInfo> commandInfo, ICommandContext commandContext, IResult result)
+    private Task CommandExecuted(Optional<CommandInfo> commandInfo, ICommandContext commandContext, IResult result)
     {
         if (!result.IsSuccess && result.Error != CommandError.UnknownCommand)
         {
             _logger.LogError(result.ErrorReason);
         }
 
-        await Task.CompletedTask;
+        return Task.CompletedTask;
     }
 
     private async Task HandleMessageAsync(SocketMessage message)
