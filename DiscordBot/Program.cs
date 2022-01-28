@@ -31,7 +31,6 @@ public static class Program
         };
 
         services.AddSingleton(new DiscordSocketClient(clientConfig))
-                .AddSingleton<MessageHandler>()
                 .AddSingleton<CommandService>()
                 .AddSingleton<IBooruClient, BooruClient>()
                 .AddSingleton<ISauceClient, SauceClient>();
