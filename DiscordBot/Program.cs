@@ -1,5 +1,6 @@
 using Discord;
 using Discord.Commands;
+using Discord.Interactions;
 using Discord.WebSocket;
 using DiscordBot.Clients;
 using DiscordBot.Clients.Interface;
@@ -32,6 +33,7 @@ public static class Program
 
         services.AddSingleton(new DiscordSocketClient(clientConfig))
                 .AddSingleton<CommandService>()
+                .AddSingleton<InteractionService>()
                 .AddSingleton<IBooruClient, BooruClient>()
                 .AddSingleton<ISauceClient, SauceClient>();
     }

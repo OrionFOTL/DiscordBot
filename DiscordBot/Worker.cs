@@ -1,5 +1,6 @@
 using Discord;
 using Discord.Commands;
+using Discord.Interactions;
 using Discord.WebSocket;
 using DiscordBot.Commands;
 
@@ -12,6 +13,7 @@ public class Worker : BackgroundService
     private readonly ILogger<Worker> _logger;
     private readonly DiscordSocketClient _discordClient;
     private readonly CommandService _textCommandService;
+    private readonly InteractionService _interactionService;
     private readonly IServiceProvider _serviceProvider;
 
     public Worker(
@@ -19,6 +21,7 @@ public class Worker : BackgroundService
         ILogger<Worker> logger,
         DiscordSocketClient discordClient,
         CommandService textCommandService,
+        InteractionService interactionService,
         IServiceProvider serviceProvider)
     {
         _discordBotToken = configuration["DiscordBotToken"];
@@ -26,6 +29,7 @@ public class Worker : BackgroundService
         _logger = logger;
         _discordClient = discordClient;
         _textCommandService = textCommandService;
+        _interactionService = interactionService;
         _serviceProvider = serviceProvider;
     }
 
@@ -35,10 +39,13 @@ public class Worker : BackgroundService
 
         _discordClient.Log += Client_Log;
         _discordClient.MessageReceived += HandleMessageReceived;
+        _discordClient.InteractionCreated += HandleInteractionCreated;
+        _discordClient.Ready += async () => await _interactionService.RegisterCommandsGloballyAsync();
 
         _textCommandService.CommandExecuted += CommandExecuted;
 
         await _textCommandService.AddModulesAsync(typeof(EggplantModule).Assembly, _serviceProvider);
+        await _interactionService.AddModulesAsync(typeof(GreeterInteractionModule).Assembly, _serviceProvider);
 
         await _discordClient.LoginAsync(TokenType.Bot, _discordBotToken);
         await _discordClient.StartAsync();
@@ -68,6 +75,12 @@ public class Worker : BackgroundService
         var commandContext = new SocketCommandContext(_discordClient, userMessage);
 
         await _textCommandService.ExecuteAsync(commandContext, commandStartPos, _serviceProvider);
+    }
+
+    private async Task HandleInteractionCreated(SocketInteraction interaction)
+    {
+        var interactionContext = new SocketInteractionContext(_discordClient, interaction);
+        await _interactionService.ExecuteCommandAsync(interactionContext, _serviceProvider);
     }
 
     private Task CommandExecuted(Optional<CommandInfo> commandInfo, ICommandContext commandContext, Discord.Commands.IResult result)
