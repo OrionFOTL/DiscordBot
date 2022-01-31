@@ -1,6 +1,6 @@
 ﻿using DiscordBot.Model;
 
-namespace DiscordBot.Clients.Interface;
+namespace DiscordBot.Services.Interface;
 
 public interface ISauceClient
 {

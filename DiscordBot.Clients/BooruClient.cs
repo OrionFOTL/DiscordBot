@@ -2,11 +2,11 @@
 using BooruDex.Booru;
 using BooruDex.Booru.Client;
 using BooruDex.Exceptions;
-using DiscordBot.Clients.Interface;
 using DiscordBot.Model;
+using DiscordBot.Services.Interface;
 using Microsoft.Extensions.Logging;
 
-namespace DiscordBot.Clients;
+namespace DiscordBot.Services;
 
 public class BooruClient : IBooruClient
 {

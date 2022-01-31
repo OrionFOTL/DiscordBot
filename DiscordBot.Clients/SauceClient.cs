@@ -1,10 +1,10 @@
 ﻿using System.Globalization;
-using DiscordBot.Clients.Interface;
 using DiscordBot.Model;
+using DiscordBot.Services.Interface;
 using Microsoft.Extensions.Configuration;
 using SauceNET;
 
-namespace DiscordBot.Clients;
+namespace DiscordBot.Services;
 
 public class SauceClient : ISauceClient
 {

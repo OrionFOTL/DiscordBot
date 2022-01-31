@@ -5,11 +5,11 @@ VisualStudioVersion = 17.0.31919.166
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DiscordBot", "DiscordBot\DiscordBot.csproj", "{748CAD93-02B0-4254-BA57-3AB12098F3F1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DiscordBot.Clients", "DiscordBot.Clients\DiscordBot.Clients.csproj", "{BD8DCB33-C601-4831-B5F6-786973C7C0E3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DiscordBot.Services", "DiscordBot.Clients\DiscordBot.Services.csproj", "{BD8DCB33-C601-4831-B5F6-786973C7C0E3}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DiscordBot.Model", "DiscordBot.Model\DiscordBot.Model.csproj", "{3FD050BA-EB47-43E6-B70D-344E33FB8E4B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DiscordBot.Clients.Interface", "DiscordBot.Clients.Interface\DiscordBot.Clients.Interface.csproj", "{ABA031B0-14B0-4301-B5B4-B4D11BA7CE6B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DiscordBot.Services.Interface", "DiscordBot.Clients.Interface\DiscordBot.Services.Interface.csproj", "{ABA031B0-14B0-4301-B5B4-B4D11BA7CE6B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

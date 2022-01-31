@@ -2,8 +2,8 @@ using Discord;
 using Discord.Commands;
 using Discord.Interactions;
 using Discord.WebSocket;
-using DiscordBot.Clients;
-using DiscordBot.Clients.Interface;
+using DiscordBot.Services;
+using DiscordBot.Services.Interface;
 
 namespace DiscordBot;
 
