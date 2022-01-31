@@ -1,8 +1,8 @@
+using System.Reflection;
 using Discord;
 using Discord.Commands;
 using Discord.Interactions;
 using Discord.WebSocket;
-using DiscordBot.Commands;
 
 namespace DiscordBot;
 
@@ -44,8 +44,8 @@ public class Worker : BackgroundService
 
         _textCommandService.CommandExecuted += CommandExecuted;
 
-        await _textCommandService.AddModulesAsync(typeof(EggplantModule).Assembly, _serviceProvider);
-        await _interactionService.AddModulesAsync(typeof(GreeterInteractionModule).Assembly, _serviceProvider);
+        await _textCommandService.AddModulesAsync(Assembly.GetExecutingAssembly(), _serviceProvider);
+        await _interactionService.AddModulesAsync(Assembly.GetExecutingAssembly(), _serviceProvider);
 
         await _discordClient.LoginAsync(TokenType.Bot, _discordBotToken);
         await _discordClient.StartAsync();

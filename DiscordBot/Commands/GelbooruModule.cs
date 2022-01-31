@@ -4,7 +4,6 @@ using Discord.Commands.Builders;
 using Discord.WebSocket;
 using DiscordBot.Clients.Interface;
 using DiscordBot.Model;
-using Microsoft.Extensions.Logging;
 
 namespace DiscordBot.Commands;
 
