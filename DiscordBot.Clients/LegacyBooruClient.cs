@@ -8,12 +8,12 @@ using Microsoft.Extensions.Logging;
 
 namespace DiscordBot.Services;
 
-public class BooruClient : IBooruClient
+public class LegacyBooruClient : IBooruClient
 {
-    private readonly ILogger<BooruClient> _logger;
+    private readonly ILogger<LegacyBooruClient> _logger;
     private readonly Booru _booru;
 
-    public BooruClient(ILogger<BooruClient> logger)
+    public LegacyBooruClient(ILogger<LegacyBooruClient> logger)
     {
         _logger = logger;
         _booru = new Gelbooru();
