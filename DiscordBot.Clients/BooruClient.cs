@@ -67,7 +67,7 @@ public class BooruClient : IBooruClient
         return posts.FirstOrDefault();
     }
 
-    public async Task<IEnumerable<string>> GetTopTags(string tag)
+    public async Task<IEnumerable<(string Tag, int Count)>> GetSimilarTags(string tag)
     {
         var foundTags = await _booru.TagListAsync(tag.Split('_').First() + "%");
 
@@ -75,6 +75,39 @@ public class BooruClient : IBooruClient
             .OrderByDescending(t => t.Count)
             .Where(t => t.Name != tag.ToLower())
             .Take(3)
-            .Select(t => t.Name);
+            .Select(t => (Tag: t.Name, t.Count));
+    }
+
+    public async Task<Post> GetRandomImageAsync(bool noVideo = true, bool allowNsfw = false, params string[] contentTags)
+    {
+        var tags = contentTags.ToList();
+
+        if (noVideo)
+        {
+            tags.Add("-video -mp4 -webm");
+        }
+
+        if (!allowNsfw)
+        {
+            tags.Add("rating:safe");
+        }
+
+        try
+        {
+            var post = await _booru.GetRandomPostAsync(contentTags);
+
+            return new Post
+            {
+                PostUrl = post.PostUrl,
+                FileUrl = post.FileUrl,
+                PreviewUrl = post.PreviewUrl,
+                Tags = post.Tags,
+                Source = post.Source
+            };
+        }
+        catch (SearchNotFoundException)
+        {
+            return null;
+        }
     }
 }

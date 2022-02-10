@@ -8,5 +8,7 @@ public interface IBooruClient
 
     Task<Post> GetImageAsync(int amount, int page, bool top = true, bool noVideo = true, bool allowNsfw = false, params string[] contentTags);
 
-    Task<IEnumerable<string>> GetTopTags(string tag);
+    Task<Post> GetRandomImageAsync(bool noVideo = true, bool allowNsfw = false, params string[] contentTags);
+
+    Task<IEnumerable<(string Tag, int Count)>> GetSimilarTags(string tag);
 }
