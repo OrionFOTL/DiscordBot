@@ -40,7 +40,7 @@ public class Worker : BackgroundService
         _discordClient.Log += Client_Log;
         _discordClient.MessageReceived += HandleMessageReceived;
         _discordClient.InteractionCreated += HandleInteractionCreated;
-        _discordClient.Ready += async () => await _interactionService.RegisterCommandsGloballyAsync();
+        _discordClient.Ready += async () => await _interactionService.RegisterCommandsToGuildAsync(887064391445512294);
 
         _textCommandService.CommandExecuted += CommandExecuted;
 
