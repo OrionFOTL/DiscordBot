@@ -1,4 +1,4 @@
-﻿using Discord;
+using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
 using DiscordBot.Model;
@@ -19,14 +19,119 @@ namespace DiscordBot.Commands.BooruGallery
             _sauceClient = sauceClient;
         }
 
+        [SlashCommand("random", "Start a gallery", runMode: RunMode.Async)]
+        public async Task StartRandomGallery(string tag1, string tag2 = null, string tag3 = null)
+        {
+            var tags = new[] { tag1, tag2, tag3 }.Where(t => t is not null).ToArray();
+
+            Task fetchingReplyTask = Context.Interaction.RespondAsync(embed: new EmbedBuilder().WithDescription("Fetching...").Build(), allowedMentions: AllowedMentions.None);
+            Task<IEnumerable<(string Tag, int Count)>> suggestTagsTask = _booruClient.GetSimilarTags(tags.First());
+
+            bool allowNsfw = Context.Channel switch
+            {
+                ITextChannel textChannel => textChannel.IsNsfw,
+                IDMChannel dmChannel => true,
+                _ => false,
+            };
+
+            Post image = await _booruClient.GetRandomImageAsync(noVideo: true, allowNsfw, tags);
+            await fetchingReplyTask;
+            
+            IEnumerable<(string Tag, int Count)> suggestedTags = await suggestTagsTask;
+
+            if (image is null)
+            {
+                await ModifyOriginalResponseAsync(m =>
+                {
+                    m.Content = $"You might've meant: {string.Join(", ", suggestedTags.Select(t => $"`{t.Tag} ({t.Count})`"))}";
+                    m.Embed = new EmbedBuilder().WithDescription("No images found.").Build();
+                });
+                return;
+            }
+
+            string joinedTags = string.Join(';', tags);
+            await ModifyOriginalResponseAsync(m =>
+            {
+                m.Content = $"You might've meant: {string.Join(", ", suggestedTags.Select(t => $"`{t.Tag} ({t.Count})`"))}";
+                m.Embed = new EmbedBuilder
+                {
+                    Title = "Random image:",
+                    Url = image.PostUrl,
+                    ImageUrl = image.FileUrl.ToString(),
+                }.Build();
+                m.Components = new ComponentBuilder()
+                    .WithButton(customId: $"go:p,1,{joinedTags}", style: ButtonStyle.Secondary, emote: new Emoji("◀"), disabled: true)
+                    .WithButton(customId: $"sauce", style: ButtonStyle.Secondary, emote: new Emoji("🍝"), label: "Sauce")
+                    .WithButton(customId: $"go:n,1,{joinedTags}", style: ButtonStyle.Secondary, emote: new Emoji("▶"))
+                    .Build();
+            });
+        }
+
+        [ComponentInteraction("go:*,*,*")]
+        public async Task ChangePage(string direction, string currentPage, string longTags)
+        {
+            var interaction = (SocketMessageComponent)Context.Interaction;
+
+            IEnumerable<ButtonComponent> messageButtons = interaction.Message.Components.First().Components.OfType<ButtonComponent>();
+            IEnumerable<IMessageComponent> disabledButtons = messageButtons.Select<ButtonComponent, IMessageComponent>(button => button.ToBuilder().WithDisabled(true).Build());
+
+            Task loadingMessageTask = interaction.UpdateAsync(mp =>
+            {
+                mp.Embed = interaction.Message.Embeds.First()
+                    .ToEmbedBuilder()
+                    .WithTitle($"Loading {(direction == "n" ? "next" : "previous")} image...")
+                    .WithUrl(null)
+                    .Build();
+                mp.Components = new ComponentBuilder().AddRow(new ActionRowBuilder().WithComponents(disabledButtons.ToList())).Build();
+            });
+
+            bool allowNsfw = Context.Channel switch
+            {
+                ITextChannel textChannel => textChannel.IsNsfw,
+                IDMChannel => true,
+                _ => false,
+            };
+
+            var tags = longTags.Split(';');
+            int requestedPage = int.Parse(currentPage) + (direction == "n" ? 1 : -1);
+            var updatedImage = await _booruClient.GetRandomImageAsync(noVideo: true, allowNsfw: allowNsfw, contentTags: tags.ToArray());
+            
+            await loadingMessageTask;
+
+            if (updatedImage is null)
+            {
+                await interaction.ModifyOriginalResponseAsync(mp =>
+                {
+                    mp.Embed = new EmbedBuilder().WithTitle("No further images found.").Build();
+                    mp.Components = new ComponentBuilder()
+                        .WithButton(customId: $"go:p,{requestedPage},{longTags}", style: ButtonStyle.Secondary, emote: new Emoji("◀"), disabled: requestedPage <= 1)
+                        .WithButton(customId: "sauce", style: ButtonStyle.Secondary, emote: new Emoji("🍝"), label: "Sauce", disabled: true)
+                        .WithButton(customId: $"go:n,{requestedPage},{longTags}", style: ButtonStyle.Secondary, emote: new Emoji("▶"), disabled: direction == "n")
+                        .Build();
+                });
+                return;
+            }
+
+            await interaction.ModifyOriginalResponseAsync(mp =>
+            {
+                mp.Embed = new EmbedBuilder
+                {
+                    Title = $"Random image #{requestedPage}:",
+                    Url = updatedImage.PostUrl,
+                    ImageUrl = updatedImage.FileUrl.ToString(),
+                }.Build();
+                mp.Components = new ComponentBuilder()
+                    .WithButton(customId: $"go:p,{requestedPage},{longTags}", style: ButtonStyle.Secondary, emote: new Emoji("◀"), disabled: requestedPage <= 1)
+                    .WithButton(customId: $"sauce", style: ButtonStyle.Secondary, emote: new Emoji("🍝"), label: "Sauce")
+                    .WithButton(customId: $"go:n,{requestedPage},{longTags}", style: ButtonStyle.Secondary, emote: new Emoji("▶"))
+                    .Build();
+            });
+        }
+
         [ComponentInteraction("sauce")]
         public async Task AddSauce()
         {
-            if (Context.Interaction is not SocketMessageComponent interaction)
-            {
-                await DeferAsync();
-                return;
-            }
+            var interaction = (SocketMessageComponent)Context.Interaction;
 
             // disable Sauce button
             List<IMessageComponent> galleryButtons = interaction.Message.Components.First().Components.ToList();
@@ -43,7 +148,8 @@ namespace DiscordBot.Commands.BooruGallery
                     .ToEmbedBuilder()
                     .WithDescription("Fetching sauce... ⏳")
                     .Build();
-                mp.Components = new ComponentBuilder().AddRow(new ActionRowBuilder().WithComponents(galleryButtons)).Build();
+                mp.Components = new ComponentBuilder().AddRow(new ActionRowBuilder().WithComponents(galleryButtons))
+                                                      .Build();
             });
 
             IEnumerable<SauceData> sauces = await _sauceClient.GetSauce(interaction.Message.Embeds.First().Image.Value.Url);
@@ -62,88 +168,12 @@ namespace DiscordBot.Commands.BooruGallery
                 };
             });
 
-            await interaction.UpdateAsync(mp =>
+            await interaction.ModifyOriginalResponseAsync(mp =>
             {
                 mp.Embed = interaction.Message.Embeds.First()
                     .ToEmbedBuilder()
                     .WithDescription(saucesFields.Any() ? "Sauce:" : "No sauces found")
                     .WithFields(saucesFields)
-                    .Build();
-            });
-        }
-
-        [ComponentInteraction("paginator")]
-        public async Task ChangePage()
-        {
-            if (Context.Interaction is not SocketMessageComponent interaction)
-            {
-                await DeferAsync();
-                return;
-            }
-
-            string[] customValues = interaction.Data.CustomId.Split(' ');
-
-            if (interaction.User.Id != interaction.Message.ReferencedMessage.Author.Id)
-            {
-                await FollowupAsync("Only the original user can browse the gallery.", ephemeral: true);
-                return;
-            }
-
-            bool forward = customValues.Contains("next");
-
-            IEnumerable<ButtonComponent> messageButtons = interaction.Message.Components.First().Components.OfType<ButtonComponent>();
-            IEnumerable<IMessageComponent> disabledButtons = messageButtons.Select<ButtonComponent, IMessageComponent>(button => button.ToBuilder().WithDisabled(true).Build());
-
-            Task loadingMessageTask = interaction.UpdateAsync(mp =>
-            {
-                mp.Embed = interaction.Message.Embeds.First()
-                    .ToEmbedBuilder()
-                    .WithTitle($"Loading {(forward ? "next" : "previous")} one...")
-                    .WithUrl(null)
-                    .Build();
-                mp.Components = new ComponentBuilder().AddRow(new ActionRowBuilder().WithComponents(disabledButtons.ToList())).Build();
-            });
-
-            bool allowNsfw = Context.Channel switch
-            {
-                ITextChannel textChannel => textChannel.IsNsfw,
-                IDMChannel => true,
-                _ => false,
-            };
-
-            var tags = interaction.Message.ReferencedMessage.Content.Split(' ').Skip(1);
-
-            int requestedPage = Convert.ToInt32(customValues.Last()) + (forward ? 1 : -1);
-
-            var updatedImage = await _booruClient.GetRandomImageAsync(noVideo: true, allowNsfw: allowNsfw, contentTags: tags.ToArray());
-            await loadingMessageTask;
-
-            if (updatedImage is null)
-            {
-                await interaction.UpdateAsync(mp =>
-                {
-                    mp.Embed = new EmbedBuilder().WithTitle("No further images found.").Build();
-                    mp.Components = new ComponentBuilder()
-                        .WithButton(customId: $"paginator previous {requestedPage}", style: ButtonStyle.Secondary, emote: new Emoji("◀"), disabled: requestedPage <= 1)
-                        .WithButton(customId: "sauce", style: ButtonStyle.Secondary, emote: new Emoji("🍝"), label: "Sauce", disabled: true)
-                        .WithButton(customId: $"paginator next {requestedPage}", style: ButtonStyle.Secondary, emote: new Emoji("▶"), disabled: forward)
-                        .Build();
-                });
-                return;
-            }
-
-            await interaction.UpdateAsync(mp =>
-            {
-                mp.Embed = new EmbedBuilder
-                {
-                    Title = $"Random image #{requestedPage}:",
-                    Url = updatedImage.PostUrl,
-                    ImageUrl = updatedImage.FileUrl.ToString(),
-                }.Build();
-                mp.Components = new ComponentBuilder()
-                    .WithButton(customId: $"paginator previous {requestedPage}", style: ButtonStyle.Secondary, emote: new Emoji("◀"), disabled: requestedPage <= 1)
-                    .WithButton(customId: $"sauce {requestedPage}", style: ButtonStyle.Secondary, emote: new Emoji("🍝"), label: "Sauce")
-                    .WithButton(customId: $"paginator next {requestedPage}", style: ButtonStyle.Secondary, emote: new Emoji("▶"))
                     .Build();
             });
         }

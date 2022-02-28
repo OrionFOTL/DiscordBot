@@ -50,7 +50,7 @@ public class LegacyBooruClient : IBooruClient
                 PostUrl = p.PostUrl,
                 FileUrl = p.FileUrl,
                 PreviewUrl = p.PreviewUrl,
-                Tags = p.Tags,
+                Tags = p.Tags.Split(','),
                 Source = p.Source
             });
         }
@@ -101,7 +101,7 @@ public class LegacyBooruClient : IBooruClient
                 PostUrl = post.PostUrl,
                 FileUrl = post.FileUrl,
                 PreviewUrl = post.PreviewUrl,
-                Tags = post.Tags,
+                Tags = post.Tags.Split(','),
                 Source = post.Source
             };
         }
