@@ -43,7 +43,7 @@ public class InteractionTestsModule : InteractionModuleBase<SocketInteractionCon
         await Task.Delay(2000);
         await interaction.UpdateAsync(mp => mp.Content = DateTime.Now.ToString());
 
-        
+
 
         await Task.Delay(2000);
         await ModifyOriginalResponseAsync(mp => mp.Content = DateTime.Now.ToString());

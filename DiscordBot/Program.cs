@@ -31,10 +31,12 @@ public static class Program
                              & ~GatewayIntents.GuildInvites
         };
 
-        services.AddSingleton(new DiscordSocketClient(clientConfig))
+        services.AddSingleton<HttpClient>()
+                .AddSingleton(new DiscordSocketClient(clientConfig))
                 .AddSingleton<CommandService>()
                 .AddSingleton<InteractionService>()
                 .AddSingleton<IBooruClient, NewBooruClient>()
-                .AddSingleton<ISauceClient, SauceClient>();
+                .AddSingleton<ISauceClient, SauceClient>()
+                .AddSingleton<ITagClient, GelbooruTagClient>();
     }
 }

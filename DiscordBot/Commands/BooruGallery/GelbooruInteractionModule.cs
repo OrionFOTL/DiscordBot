@@ -10,12 +10,18 @@ namespace DiscordBot.Commands.BooruGallery
     {
         private readonly ILogger<GelbooruInteractionModule> _logger;
         private readonly IBooruClient _booruClient;
+        private readonly ITagClient _tagClient;
         private readonly ISauceClient _sauceClient;
 
-        public GelbooruInteractionModule(ILogger<GelbooruInteractionModule> logger, IBooruClient booruClient, ISauceClient sauceClient)
+        public GelbooruInteractionModule(
+            ILogger<GelbooruInteractionModule> logger,
+            IBooruClient booruClient,
+            ITagClient tagClient,
+            ISauceClient sauceClient)
         {
             _logger = logger;
             _booruClient = booruClient;
+            _tagClient = tagClient;
             _sauceClient = sauceClient;
         }
 
@@ -25,7 +31,7 @@ namespace DiscordBot.Commands.BooruGallery
             var tags = new[] { tag1, tag2, tag3 }.Where(t => t is not null).ToArray();
 
             Task fetchingReplyTask = Context.Interaction.RespondAsync(embed: new EmbedBuilder().WithDescription("Fetching...").Build(), allowedMentions: AllowedMentions.None);
-            Task<IEnumerable<(string Tag, int Count)>> suggestTagsTask = _booruClient.GetSimilarTags(tags.First());
+            Task<IEnumerable<(string Tag, int Count)>> suggestTagsTask = _tagClient.GetSimilarTags(tags.First());
 
             bool allowNsfw = Context.Channel switch
             {
@@ -36,7 +42,7 @@ namespace DiscordBot.Commands.BooruGallery
 
             Post image = await _booruClient.GetRandomImageAsync(noVideo: true, allowNsfw, tags);
             await fetchingReplyTask;
-            
+
             IEnumerable<(string Tag, int Count)> suggestedTags = await suggestTagsTask;
 
             if (image is null)
@@ -95,7 +101,7 @@ namespace DiscordBot.Commands.BooruGallery
             var tags = longTags.Split(';');
             int requestedPage = int.Parse(currentPage) + (direction == "n" ? 1 : -1);
             var updatedImage = await _booruClient.GetRandomImageAsync(noVideo: true, allowNsfw: allowNsfw, contentTags: tags.ToArray());
-            
+
             await loadingMessageTask;
 
             if (updatedImage is null)
