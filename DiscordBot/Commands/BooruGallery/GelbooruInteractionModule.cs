@@ -26,9 +26,12 @@ namespace DiscordBot.Commands.BooruGallery
         }
 
         [SlashCommand("random", "Start a gallery", runMode: RunMode.Async)]
-        public async Task StartRandomGallery(string tag1, string tag2 = null, string tag3 = null)
+        public async Task StartRandomGallery(
+            [Autocomplete(typeof(TagAutocompleteHandler))] string tag1,
+            [Autocomplete(typeof(TagAutocompleteHandler))] string tag2 = null,
+            [Autocomplete(typeof(TagAutocompleteHandler))] string tag3 = null)
         {
-            var tags = new[] { tag1, tag2, tag3 }.Where(t => t is not null).ToArray();
+            var tags = new[] { tag1, tag2, tag3 }.Where(t => t is not null).Select(t => t.Trim()).ToArray();
 
             Task fetchingReplyTask = Context.Interaction.RespondAsync(embed: new EmbedBuilder().WithDescription("Fetching...").Build(), allowedMentions: AllowedMentions.None);
             Task<IEnumerable<(string Tag, int Count)>> suggestTagsTask = _tagClient.GetSimilarTags(tags.First());
@@ -49,7 +52,7 @@ namespace DiscordBot.Commands.BooruGallery
             {
                 await ModifyOriginalResponseAsync(m =>
                 {
-                    m.Content = $"You might've meant: {string.Join(", ", suggestedTags.Select(t => $"`{t.Tag} ({t.Count})`"))}";
+                    m.Content = $"Gallery of {string.Join(", ", tags.Select(t => $"`{t}`"))}";
                     m.Embed = new EmbedBuilder().WithDescription("No images found.").Build();
                 });
                 return;
@@ -58,7 +61,7 @@ namespace DiscordBot.Commands.BooruGallery
             string joinedTags = string.Join(';', tags);
             await ModifyOriginalResponseAsync(m =>
             {
-                m.Content = $"You might've meant: {string.Join(", ", suggestedTags.Select(t => $"`{t.Tag} ({t.Count})`"))}";
+                m.Content = $"Gallery of {string.Join(", ", tags.Select(t => $"`{t}`"))}";
                 m.Embed = new EmbedBuilder
                 {
                     Title = "Random image:",
