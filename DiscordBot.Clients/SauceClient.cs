@@ -30,7 +30,7 @@ public class SauceClient : ISauceClient
             .GroupBy(r => r.DatabaseName)
             .Select(group => group.First());
 
-        sauces = sauces.Where(s => new[] { "Pixiv", "Twitter", "E-hentai", "Yande.re" }.Contains(s.DatabaseName));
+        sauces = sauces.Where(s => s.DatabaseName is "Pixiv" or "Twitter" or "E-hentai" or "Yande.re");
 
         return sauces.Select(s => new SauceData
         {

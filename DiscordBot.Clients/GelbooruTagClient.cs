@@ -15,7 +15,7 @@ public class GelbooruTagClient : ITagClient
 
     public async Task<IEnumerable<(string Tag, int Count)>> GetSimilarTags(string tag)
     {
-        var uri = new Uri($"https://gelbooru.com/index.php?page=dapi&s=tag&q=index&json=1&limit=10&name_pattern={tag}%");
+        var uri = new Uri($"https://gelbooru.com/index.php?page=dapi&s=tag&q=index&json=1&limit=5&orderby=count&name_pattern=%{tag}%");
 
         var response = await _client.GetStringAsync(uri);
 
