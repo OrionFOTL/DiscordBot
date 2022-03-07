@@ -16,7 +16,7 @@ public static class Program
 
     public static IHostBuilder CreateHostBuilder(string[] args) =>
         Host.CreateDefaultBuilder(args)
-            .ConfigureServices((hostContext, services) =>
+            .ConfigureServices(services =>
             {
                 services.AddHostedService<Worker>()
                         .ConfigureBotServices();
