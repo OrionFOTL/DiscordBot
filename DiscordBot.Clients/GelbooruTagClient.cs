@@ -21,30 +21,30 @@ public class GelbooruTagClient : ITagClient
 
         TagResponse tagResponse = JsonSerializer.Deserialize<TagResponse>(response, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-        return tagResponse.Tags.Where(t => t.Count > 0).Select(t => (Tag: t.Name, Count: t.Count));
+        return tagResponse.Tags.Where(t => t.Count > 0).Select(t => (Tag: t.Name, t.Count));
     }
-}
+    
+    class TagResponse
+    {
+        [JsonPropertyName("@attributes")]
+        public Attributes Attributes { get; set; }
+    
+        [JsonPropertyName("tag")]
+        public List<Tag> Tags { get; set; }
+    }
+    class Attributes
+    {
+        public int Limit { get; set; }
+        public int Offset { get; set; }
+        public int Count { get; set; }
+    }
 
-public class TagResponse
-{
-    [JsonPropertyName("@attributes")]
-    public Attributes Attributes { get; set; }
-    [JsonPropertyName("tag")]
-    public List<Tag> Tags { get; set; }
-}
-
-public class Attributes
-{
-    public int Limit { get; set; }
-    public int Offset { get; set; }
-    public int Count { get; set; }
-}
-
-public class Tag
-{
-    public int Id { get; set; }
-    public string Name { get; set; }
-    public int Count { get; set; }
-    public int Type { get; set; }
-    public int Ambiguous { get; set; }
+    class Tag
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public int Count { get; set; }
+        public int Type { get; set; }
+        public int Ambiguous { get; set; }
+    }
 }

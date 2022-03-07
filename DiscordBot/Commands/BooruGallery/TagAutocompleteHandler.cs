@@ -59,7 +59,7 @@ namespace DiscordBot.Commands.BooruGallery
 
             try
             {
-                await Task.Delay(700, cancellationToken);
+                await Task.Delay(100, cancellationToken);
             }
             catch (TaskCanceledException)
             {
