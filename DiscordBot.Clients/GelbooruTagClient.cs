@@ -1,12 +1,15 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using DiscordBot.Services.Interface;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 
 namespace DiscordBot.Services;
 
 public class GelbooruTagClient : ITagClient
 {
+    private const string _tagApiUrl = @"https://gelbooru.com/index.php?page=dapi&s=tag&q=index&json=1";
+
     private readonly ILogger<GelbooruTagClient> _logger;
     private readonly HttpClient _client;
 
@@ -18,12 +21,20 @@ public class GelbooruTagClient : ITagClient
 
     public async Task<IEnumerable<(string Tag, int Count)>> GetSimilarTags(string tag)
     {
-        var uri = new Uri($"https://gelbooru.com/index.php?page=dapi&s=tag&q=index&json=1&limit=5&orderby=count&name_pattern=%{tag}%");
+        var tagSearchParameters = new Dictionary<string, string>
+        {
+            ["limit"] = "5",
+            ["orderby"] = "count",
+            ["name_pattern"] = "%" + tag + "%",
+        };
+
+        var requestUri = new Uri(QueryHelpers.AddQueryString(_tagApiUrl, tagSearchParameters));
+
         string response;
 
         try
         {
-            response = await _client.GetStringAsync(uri);
+            response = await _client.GetStringAsync(requestUri);
         }
         catch (Exception e)
         {
