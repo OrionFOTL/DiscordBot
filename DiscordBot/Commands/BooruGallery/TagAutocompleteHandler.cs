@@ -22,8 +22,6 @@ namespace DiscordBot.Commands.BooruGallery
         {
             var tag = autocompleteInteraction.Data.Current.Value as string;
 
-            _logger.LogInformation(DateTimeOffset.Now.ToString("MM/dd/yyyy hh:mm:ss.fff tt") + " Got argument: " + tag);
-
             if (string.IsNullOrWhiteSpace(tag) || tag.Length <= 1)
             {
                 return AutocompletionResult.FromSuccess();
@@ -73,11 +71,11 @@ namespace DiscordBot.Commands.BooruGallery
                 return Array.Empty<(string Tag, int Count)>();
             }
 
-            _logger.LogWarning(DateTimeOffset.Now.ToString("MM/dd/yyyy hh:mm:ss.fff tt") + " Sending argument: " + tag);
+            _logger.LogWarning("Getting suggestions for tag: {tag}", tag);
 
             var tags = await _tagClient.GetSimilarTags(tag);
 
-            _logger.LogCritical(DateTimeOffset.Now.ToString("MM/dd/yyyy hh:mm:ss.fff tt") + " Got suggestion: " + tags.FirstOrDefault().Tag + " for argument: " + tag);
+            _logger.LogWarning("Got suggestion: {suggestion} for tag: {tag}", tags.FirstOrDefault().Tag, tag);
 
             return tags;
         }

@@ -43,6 +43,7 @@ public class Worker : BackgroundService
         _discordClient.Ready += async () => await _interactionService.RegisterCommandsToGuildAsync(887064391445512294);
 
         _textCommandService.CommandExecuted += CommandExecuted;
+        _interactionService.Log += Client_Log;
 
         await _textCommandService.AddModulesAsync(Assembly.GetExecutingAssembly(), _serviceProvider);
         await _interactionService.AddModulesAsync(Assembly.GetExecutingAssembly(), _serviceProvider);
@@ -79,6 +80,33 @@ public class Worker : BackgroundService
 
     private async Task HandleInteractionCreated(SocketInteraction interaction)
     {
+        switch (interaction)
+        {
+            case IComponentInteraction messageComponent:
+                _logger.LogInformation(
+                    "Interaction received from user: {user}, type: {interactionType}, buttonId: {buttonId}",
+                    messageComponent.User,
+                    messageComponent.Type,
+                    messageComponent.Data.CustomId);
+                break;
+            case IAutocompleteInteraction autocompleteInteraction:
+                _logger.LogInformation(
+                    "Interaction received from user: {user}, type: {interactionType}, slash command: {command}, argument: {argument}",
+                    autocompleteInteraction.User,
+                    autocompleteInteraction.Type,
+                    autocompleteInteraction.Data.CommandName,
+                    autocompleteInteraction.Data.Current.Value);
+                break;
+            case ISlashCommandInteraction slashCommandInteraction:
+                _logger.LogInformation(
+                    "Interaction received from user: {user}, type: {interactionType}, slash command: {command}, arguments: {@arguments}",
+                    slashCommandInteraction.User,
+                    slashCommandInteraction.Type,
+                    slashCommandInteraction.Data.Name,
+                    slashCommandInteraction.Data.Options);
+                break;
+        }
+
         var interactionContext = new SocketInteractionContext(_discordClient, interaction);
         await _interactionService.ExecuteCommandAsync(interactionContext, _serviceProvider);
     }

@@ -1,23 +1,35 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using DiscordBot.Services.Interface;
+using Microsoft.Extensions.Logging;
 
 namespace DiscordBot.Services;
 
 public class GelbooruTagClient : ITagClient
 {
+    private readonly ILogger<GelbooruTagClient> _logger;
     private readonly HttpClient _client;
 
-    public GelbooruTagClient(HttpClient client)
+    public GelbooruTagClient(ILogger<GelbooruTagClient> logger, HttpClient client)
     {
+        _logger = logger;
         _client = client;
     }
 
     public async Task<IEnumerable<(string Tag, int Count)>> GetSimilarTags(string tag)
     {
         var uri = new Uri($"https://gelbooru.com/index.php?page=dapi&s=tag&q=index&json=1&limit=5&orderby=count&name_pattern=%{tag}%");
+        string response;
 
-        var response = await _client.GetStringAsync(uri);
+        try
+        {
+            response = await _client.GetStringAsync(uri);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Error when autocompleting tags for '{tag}'", tag);
+            return new[] { (Tag: $"Error when autocompleting tags for '{tag}'", Count: 0) };
+        }
 
         TagResponse tagResponse = JsonSerializer.Deserialize<TagResponse>(response, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
