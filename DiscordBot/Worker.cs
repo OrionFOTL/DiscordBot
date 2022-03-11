@@ -9,6 +9,7 @@ namespace DiscordBot;
 public class Worker : BackgroundService
 {
     private readonly string _discordBotToken;
+    private readonly ulong[] _guildIds;
 
     private readonly ILogger<Worker> _logger;
     private readonly DiscordSocketClient _discordClient;
@@ -25,6 +26,7 @@ public class Worker : BackgroundService
         IServiceProvider serviceProvider)
     {
         _discordBotToken = configuration["DiscordBotToken"];
+        _guildIds = configuration.GetSection("Guilds").Get<ulong[]>();
 
         _logger = logger;
         _discordClient = discordClient;
@@ -38,9 +40,9 @@ public class Worker : BackgroundService
         _logger.LogInformation("Starting discord bot");
 
         _discordClient.Log += Client_Log;
+        _discordClient.Ready += RegisterSlashCommandsToGuilds;
         _discordClient.MessageReceived += HandleMessageReceived;
         _discordClient.InteractionCreated += HandleInteractionCreated;
-        _discordClient.Ready += async () => await _interactionService.RegisterCommandsToGuildAsync(887064391445512294);
 
         _textCommandService.CommandExecuted += CommandExecuted;
         _interactionService.Log += Client_Log;
@@ -58,6 +60,14 @@ public class Worker : BackgroundService
     {
         _logger.LogInformation(arg.ToString());
         return Task.CompletedTask;
+    }
+
+    private async Task RegisterSlashCommandsToGuilds()
+    {
+        foreach (var guildId in _guildIds)
+        {
+            await _interactionService.RegisterCommandsToGuildAsync(guildId);
+        }
     }
 
     private async Task HandleMessageReceived(SocketMessage socketMessage)
