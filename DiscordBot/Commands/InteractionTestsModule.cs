@@ -4,6 +4,10 @@ using Discord.WebSocket;
 
 namespace DiscordBot.Commands;
 
+#if !DEBUG
+[DontAutoRegister]
+#endif
+
 public class InteractionTestsModule : InteractionModuleBase<SocketInteractionContext>
 {
     [SlashCommand("spawner", "Posts a message with a button")]

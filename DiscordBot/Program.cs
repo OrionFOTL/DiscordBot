@@ -62,7 +62,7 @@ public static class Program
                 .AddSingleton(new DiscordSocketClient(clientConfig))
                 .AddSingleton<CommandService>()
                 .AddSingleton<InteractionService>()
-                .AddSingleton<IBooruClient, NewBooruClient>()
+                .AddSingleton<IBooruClient, NewGelbooruClient>()
                 .AddSingleton<ISauceClient, SauceClient>()
                 .AddSingleton<ITagClient, GelbooruTagClient>();
     }

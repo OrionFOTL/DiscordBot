@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 using DiscordBot.Services.Interface;
 using Microsoft.AspNetCore.WebUtilities;
@@ -46,28 +46,10 @@ public class GelbooruTagClient : ITagClient
 
         return tagResponse.Tags.Where(t => t.Count > 0).Select(t => (Tag: t.Name, t.Count));
     }
-    
-    class TagResponse
-    {
-        [JsonPropertyName("@attributes")]
-        public Attributes Attributes { get; set; }
-    
-        [JsonPropertyName("tag")]
-        public List<Tag> Tags { get; set; }
-    }
-    class Attributes
-    {
-        public int Limit { get; set; }
-        public int Offset { get; set; }
-        public int Count { get; set; }
-    }
 
-    class Tag
-    {
-        public int Id { get; set; }
-        public string Name { get; set; }
-        public int Count { get; set; }
-        public int Type { get; set; }
-        public int Ambiguous { get; set; }
-    }
+    private record TagResponse([property:JsonPropertyName("@attributes")] Attributes Attributes, [property: JsonPropertyName("tag")] List<Tag> Tags);
+
+    private record Attributes(int Limit, int Offset, int Count);
+
+    private record Tag(int Id, string Name, int Count, int Type, int Ambiguous);
 }
