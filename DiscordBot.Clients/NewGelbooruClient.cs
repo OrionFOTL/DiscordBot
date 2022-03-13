@@ -1,16 +1,19 @@
 ﻿using BooruSharp.Booru;
 using DiscordBot.Model;
 using DiscordBot.Services.Interface;
+using Microsoft.Extensions.Logging;
 
 namespace DiscordBot.Services;
 
-public class NewBooruClient : IBooruClient
+public class NewGelbooruClient : IBooruClient
 {
     private readonly Gelbooru _gelbooru;
+    private readonly ILogger<NewGelbooruClient> _logger;
 
-    public NewBooruClient()
+    public NewGelbooruClient(ILogger<NewGelbooruClient> logger)
     {
         _gelbooru = new Gelbooru();
+        _logger = logger;
     }
 
     public Task<Post> GetImageAsync(int amount, int page, bool top = true, bool noVideo = true, bool allowNsfw = false, params string[] contentTags)
@@ -50,8 +53,9 @@ public class NewBooruClient : IBooruClient
                 Tags = post.Tags,
             };
         }
-        catch (Exception)
+        catch (Exception e)
         {
+            _logger.LogError(e, "Exception occured during getting image for tags: {tags}", contentTags);
             return null;
         }
     }

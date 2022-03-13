@@ -9,6 +9,7 @@ namespace DiscordBot;
 public class Worker : BackgroundService
 {
     private readonly string _discordBotToken;
+    private readonly ulong[] _guildIds;
 
     private readonly ILogger<Worker> _logger;
     private readonly DiscordSocketClient _discordClient;
@@ -25,6 +26,7 @@ public class Worker : BackgroundService
         IServiceProvider serviceProvider)
     {
         _discordBotToken = configuration["DiscordBotToken"];
+        _guildIds = configuration.GetSection("Guilds").Get<ulong[]>();
 
         _logger = logger;
         _discordClient = discordClient;
@@ -38,11 +40,12 @@ public class Worker : BackgroundService
         _logger.LogInformation("Starting discord bot");
 
         _discordClient.Log += Client_Log;
+        _discordClient.Ready += RegisterSlashCommandsToGuilds;
         _discordClient.MessageReceived += HandleMessageReceived;
         _discordClient.InteractionCreated += HandleInteractionCreated;
-        _discordClient.Ready += async () => await _interactionService.RegisterCommandsToGuildAsync(887064391445512294);
 
         _textCommandService.CommandExecuted += CommandExecuted;
+        _interactionService.Log += Client_Log;
 
         await _textCommandService.AddModulesAsync(Assembly.GetExecutingAssembly(), _serviceProvider);
         await _interactionService.AddModulesAsync(Assembly.GetExecutingAssembly(), _serviceProvider);
@@ -57,6 +60,14 @@ public class Worker : BackgroundService
     {
         _logger.LogInformation(arg.ToString());
         return Task.CompletedTask;
+    }
+
+    private async Task RegisterSlashCommandsToGuilds()
+    {
+        foreach (var guildId in _guildIds)
+        {
+            await _interactionService.RegisterCommandsToGuildAsync(guildId);
+        }
     }
 
     private async Task HandleMessageReceived(SocketMessage socketMessage)
@@ -79,6 +90,33 @@ public class Worker : BackgroundService
 
     private async Task HandleInteractionCreated(SocketInteraction interaction)
     {
+        switch (interaction)
+        {
+            case IComponentInteraction messageComponent:
+                _logger.LogInformation(
+                    "Interaction received from user: {user}, type: {interactionType}, buttonId: {buttonId}",
+                    messageComponent.User,
+                    messageComponent.Type,
+                    messageComponent.Data.CustomId);
+                break;
+            case IAutocompleteInteraction autocompleteInteraction:
+                _logger.LogInformation(
+                    "Interaction received from user: {user}, type: {interactionType}, slash command: {command}, argument: {argument}",
+                    autocompleteInteraction.User,
+                    autocompleteInteraction.Type,
+                    autocompleteInteraction.Data.CommandName,
+                    autocompleteInteraction.Data.Current.Value);
+                break;
+            case ISlashCommandInteraction slashCommandInteraction:
+                _logger.LogInformation(
+                    "Interaction received from user: {user}, type: {interactionType}, slash command: {command}, arguments: {@arguments}",
+                    slashCommandInteraction.User,
+                    slashCommandInteraction.Type,
+                    slashCommandInteraction.Data.Name,
+                    slashCommandInteraction.Data.Options);
+                break;
+        }
+
         var interactionContext = new SocketInteractionContext(_discordClient, interaction);
         await _interactionService.ExecuteCommandAsync(interactionContext, _serviceProvider);
     }

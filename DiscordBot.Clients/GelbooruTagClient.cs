@@ -1,50 +1,55 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 using DiscordBot.Services.Interface;
+using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Logging;
 
 namespace DiscordBot.Services;
 
 public class GelbooruTagClient : ITagClient
 {
+    private const string _tagApiUrl = @"https://gelbooru.com/index.php?page=dapi&s=tag&q=index&json=1";
+
+    private readonly ILogger<GelbooruTagClient> _logger;
     private readonly HttpClient _client;
 
-    public GelbooruTagClient(HttpClient client)
+    public GelbooruTagClient(ILogger<GelbooruTagClient> logger, HttpClient client)
     {
+        _logger = logger;
         _client = client;
     }
 
     public async Task<IEnumerable<(string Tag, int Count)>> GetSimilarTags(string tag)
     {
-        var uri = new Uri($"https://gelbooru.com/index.php?page=dapi&s=tag&q=index&json=1&limit=5&orderby=count&name_pattern=%{tag}%");
+        var tagSearchParameters = new Dictionary<string, string>
+        {
+            ["limit"] = "5",
+            ["orderby"] = "count",
+            ["name_pattern"] = "%" + tag + "%",
+        };
 
-        var response = await _client.GetStringAsync(uri);
+        var requestUri = new Uri(QueryHelpers.AddQueryString(_tagApiUrl, tagSearchParameters));
+
+        string response;
+
+        try
+        {
+            response = await _client.GetStringAsync(requestUri);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Error when autocompleting tags for '{tag}'", tag);
+            return new[] { (Tag: $"Error when autocompleting tags for '{tag}'", Count: 0) };
+        }
 
         TagResponse tagResponse = JsonSerializer.Deserialize<TagResponse>(response, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-        return tagResponse.Tags.Where(t => t.Count > 0).Select(t => (Tag: t.Name, Count: t.Count));
+        return tagResponse.Tags.Where(t => t.Count > 0).Select(t => (Tag: t.Name, t.Count));
     }
-}
 
-public class TagResponse
-{
-    [JsonPropertyName("@attributes")]
-    public Attributes Attributes { get; set; }
-    [JsonPropertyName("tag")]
-    public List<Tag> Tags { get; set; }
-}
+    private record TagResponse([property:JsonPropertyName("@attributes")] Attributes Attributes, [property: JsonPropertyName("tag")] List<Tag> Tags);
 
-public class Attributes
-{
-    public int Limit { get; set; }
-    public int Offset { get; set; }
-    public int Count { get; set; }
-}
+    private record Attributes(int Limit, int Offset, int Count);
 
-public class Tag
-{
-    public int Id { get; set; }
-    public string Name { get; set; }
-    public int Count { get; set; }
-    public int Type { get; set; }
-    public int Ambiguous { get; set; }
+    private record Tag(int Id, string Name, int Count, int Type, int Ambiguous);
 }

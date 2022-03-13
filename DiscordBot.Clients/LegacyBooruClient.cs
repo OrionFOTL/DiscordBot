@@ -10,14 +10,11 @@ namespace DiscordBot.Services;
 
 public class LegacyBooruClient : IBooruClient
 {
-    private readonly ILogger<LegacyBooruClient> _logger;
     private readonly Booru _booru;
 
-    public LegacyBooruClient(ILogger<LegacyBooruClient> logger)
+    public LegacyBooruClient()
     {
-        _logger = logger;
         _booru = new Gelbooru();
-
     }
 
     public async Task<IEnumerable<Post>> GetImagesAsync(int amount, int page, bool top = true, bool noVideo = true, bool allowNsfw = false, params string[] contentTags)
