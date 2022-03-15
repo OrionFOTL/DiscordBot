@@ -64,7 +64,7 @@ public class LegacyBooruClient : IBooruClient
         return posts.FirstOrDefault();
     }
 
-    public async Task<IEnumerable<(string Tag, int Count)>> GetSimilarTags(string tag)
+    public async Task<IEnumerable<Tag>> GetSimilarTags(string tag)
     {
         var foundTags = await _booru.TagListAsync(tag.Split('_').First() + "%");
 
@@ -72,7 +72,7 @@ public class LegacyBooruClient : IBooruClient
             .OrderByDescending(t => t.Count)
             .Where(t => t.Name != tag.ToLower())
             .Take(3)
-            .Select(t => (Tag: t.Name, t.Count));
+            .Select(t => new Tag(t.Name, t.Count, t.Name));
     }
 
     public async Task<Post> GetRandomImageAsync(bool noVideo = true, bool allowNsfw = false, params string[] contentTags)
