@@ -25,7 +25,7 @@ namespace DiscordBot.Commands.BooruGallery
             [Autocomplete(typeof(TagAutocompleteHandler))] string tag2 = null,
             [Autocomplete(typeof(TagAutocompleteHandler))] string tag3 = null)
         {
-            var tags = new[] { tag1, tag2, tag3 }.Where(t => t is not null).Select(t => t.Trim()).ToArray();
+            var tags = new[] { tag1, tag2, tag3 }.Where(t => t is not null).Select(t => t.Trim().Replace(' ', '_')).ToArray();
 
             Task fetchingReplyTask = Context.Interaction.RespondAsync(embed: new EmbedBuilder().WithDescription("Fetching...").Build(), allowedMentions: AllowedMentions.None);
 

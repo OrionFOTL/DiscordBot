@@ -1,4 +1,4 @@
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using Discord;
 using Discord.Interactions;
 using DiscordBot.Model;
@@ -28,6 +28,7 @@ namespace DiscordBot.Commands.BooruGallery
                 return AutocompletionResult.FromSuccess();
             }
 
+            tag = tag.Replace(' ', '_');
             IEnumerable<Tag> matchingTags = await GetSimilarTags(tag, context.User.Id);
 
             if (!matchingTags.Any())
