@@ -64,6 +64,6 @@ public static class Program
                 .AddSingleton<InteractionService>()
                 .AddSingleton<IBooruClient, NewGelbooruClient>()
                 .AddSingleton<ISauceClient, SauceClient>()
-                .AddSingleton<ITagClient, GelbooruTagClient>();
+                .AddSingleton<ITagClient, GelbooruWebTagClient>();
     }
 }

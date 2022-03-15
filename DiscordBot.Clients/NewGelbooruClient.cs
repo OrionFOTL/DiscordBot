@@ -60,10 +60,10 @@ public class NewGelbooruClient : IBooruClient
         }
     }
 
-    public async Task<IEnumerable<(string Tag, int Count)>> GetSimilarTags(string tag)
+    public async Task<IEnumerable<Tag>> GetSimilarTags(string tag)
     {
         BooruSharp.Search.Tag.SearchResult[] similarTags = await _gelbooru.GetTagsAsync(tag);
 
-        return similarTags.Select(t => (Tag: t.Name, t.Count));
+        return similarTags.Select(t => new Tag(t.Name, t.Count));
     }
 }

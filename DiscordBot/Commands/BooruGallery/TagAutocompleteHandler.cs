@@ -1,6 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using Discord;
 using Discord.Interactions;
+using DiscordBot.Model;
 using DiscordBot.Services.Interface;
 
 namespace DiscordBot.Commands.BooruGallery
@@ -27,7 +28,8 @@ namespace DiscordBot.Commands.BooruGallery
                 return AutocompletionResult.FromSuccess();
             }
 
-            IEnumerable<(string Tag, int Count)> matchingTags = await GetSimilarTags(tag, context.User.Id);
+            tag = tag.Replace(' ', '_');
+            IEnumerable<Tag> matchingTags = await GetSimilarTags(tag, context.User.Id);
 
             if (!matchingTags.Any())
             {
@@ -36,14 +38,14 @@ namespace DiscordBot.Commands.BooruGallery
 
             var autocompleteResults = matchingTags.Select(t => new AutocompleteResult()
             {
-                Name = $"{t.Tag} ({t.Count})",
-                Value = t.Tag
+                Name = $"{t.PrettyName} ({t.Count})",
+                Value = t.CodedName
             });
 
             return AutocompletionResult.FromSuccess(autocompleteResults);
         }
 
-        private async Task<IEnumerable<(string Tag, int Count)>> GetSimilarTags(string tag, ulong uid)
+        private async Task<IEnumerable<Tag>> GetSimilarTags(string tag, ulong uid)
         {
             if (_userAutocompleteTokens.TryGetValue(uid, out CancellationTokenSource tokenSource))
             {
@@ -62,20 +64,20 @@ namespace DiscordBot.Commands.BooruGallery
             catch (TaskCanceledException)
             {
                 _logger.LogError(DateTimeOffset.Now.ToString("MM/dd/yyyy hh:mm:ss.fff tt") + " Sending argument: " + tag + " was cancelled by exception");
-                return Array.Empty<(string Tag, int Count)>();
+                return Array.Empty<Tag>();
             }
 
             if (cancellationToken.IsCancellationRequested)
             {
                 _logger.LogError(DateTimeOffset.Now.ToString("MM/dd/yyyy hh:mm:ss.fff tt") + " Sending argument: " + tag + " was cancelled by if");
-                return Array.Empty<(string Tag, int Count)>();
+                return Array.Empty<Tag>();
             }
 
             _logger.LogWarning("Getting suggestions for tag: {tag}", tag);
 
             var tags = await _tagClient.GetSimilarTags(tag);
 
-            _logger.LogWarning("Got suggestion: {suggestion} for tag: {tag}", tags.FirstOrDefault().Tag, tag);
+            _logger.LogWarning("Got suggestion: {suggestion} for tag: {tag}", tags.FirstOrDefault().CodedName, tag);
 
             return tags;
         }

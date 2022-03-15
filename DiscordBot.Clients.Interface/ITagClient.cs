@@ -1,7 +1,9 @@
-﻿namespace DiscordBot.Services.Interface
+﻿using DiscordBot.Model;
+
+namespace DiscordBot.Services.Interface
 {
     public interface ITagClient
     {
-        Task<IEnumerable<(string Tag, int Count)>> GetSimilarTags(string tag);
+        Task<IEnumerable<Tag>> GetSimilarTags(string tag);
     }
 }
