@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
+using DiscordBot.Model;
 using DiscordBot.Services.Interface;
 
 namespace DiscordBot.Commands;
@@ -18,7 +19,37 @@ public class SourceContextCommand : InteractionModuleBase<SocketInteractionConte
     public async Task GetSauce(SocketUserMessage message)
     {
         await DeferAsync();
+        List<string> imageUrls = ExtractImageUrlsFromMessage(message);
 
+        var urlsWithSauce = await _sauceClient.GetSauce(imageUrls);
+
+        var embeds = urlsWithSauce.Select(s => MakeEmbedFromSauces(s.Sauces)
+            .WithImageUrl(s.Url)
+            .WithFooter(new EmbedFooterBuilder { Text = $"Invoked by {Context.Interaction.User}" })
+            .Build());
+
+        await message.ReplyAsync(
+            allowedMentions: new AllowedMentions { MentionRepliedUser = false },
+            embeds: embeds.ToArray());
+
+        var deferMessage = await GetOriginalResponseAsync();
+        await deferMessage.DeleteAsync();
+    }
+
+    public static EmbedBuilder MakeEmbedFromSauces(IEnumerable<SauceData> sauces)
+    {
+        return new EmbedBuilder()
+            .WithDescription(sauces.Any() ? "🍝 Sauces:" : "No sauces found.")
+            .WithFields(sauces.Select(sauce => new EmbedFieldBuilder
+            {
+                Name = sauce.SiteName,
+                Value = string.Join(' ', sauce.LinkedPost, sauce.Byline),
+                IsInline = true,
+            }));
+    }
+
+    public static List<string> ExtractImageUrlsFromMessage(SocketUserMessage message)
+    {
         List<string> imageUrls = new();
 
         imageUrls.AddRange(message.Embeds
@@ -35,43 +66,13 @@ public class SourceContextCommand : InteractionModuleBase<SocketInteractionConte
                             ? firstEmbed.Thumbnail?.Url
                             : null;
             }));
-        
+
         imageUrls.AddRange(message.Attachments.Where(a => EndsWithImageExtension(a.Url))
                                            .Select(a => a.Url));
-
-        var urlsWithSauceTasks = imageUrls.Select(url => new { Url = url, Sauces = _sauceClient.GetSauce(url) }).ToList();
-        await Task.WhenAll(urlsWithSauceTasks.Select(url => url.Sauces));
-
-        var urlsWithSauce = await Task.WhenAll(urlsWithSauceTasks.Select(async url => new { Url = url.Url, Sauces = await url.Sauces }));
-
-        var embeds = urlsWithSauce.Select(s => new EmbedBuilder()
-        .WithImageUrl(s.Url)
-        .WithFields(s.Sauces.Select(sauce =>
-        {
-            string postTitle = string.IsNullOrEmpty(sauce.Title) ? "Post" : sauce.Title;
-            string artistLink = string.IsNullOrEmpty(sauce.ArtistId) ? null : @"https://www.pixiv.net/member.php?id=" + sauce.ArtistId;
-            string authorline = string.IsNullOrEmpty(sauce.ArtistName) ? null : $" by [{sauce.ArtistName}]({artistLink})";
-
-            return new EmbedFieldBuilder
-            {
-                Name = sauce.SiteName,
-                Value = $"[{postTitle}]({sauce.SourcePostUrl})" + authorline,
-                IsInline = true,
-            };
-        }))
-        .WithFooter(new EmbedFooterBuilder { Text = $"Invoked by {Context.Interaction.User}" })
-        .Build());
-
-        await message.ReplyAsync(
-            "Sauces:",
-            allowedMentions: new AllowedMentions { MentionRepliedUser = false },
-            embeds: embeds.ToArray());
-
-        var deferMessage = await GetOriginalResponseAsync();
-        await deferMessage.DeleteAsync();
+        return imageUrls;
     }
 
-    private static bool EndsWithImageExtension(string url)
+    public static bool EndsWithImageExtension(string url)
     {
         if (url is null)
         {

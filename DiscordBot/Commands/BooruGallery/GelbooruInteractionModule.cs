@@ -154,26 +154,14 @@ public class GelbooruInteractionModule : InteractionModuleBase<SocketInteraction
 
         IEnumerable<SauceData> sauces = await _sauceClient.GetSauce(interaction.Message.Embeds.First().Image.Value.Url);
 
-        var saucesFields = sauces.Select(s =>
-        {
-            string postTitle = string.IsNullOrEmpty(s.Title) ? "Post" : s.Title;
-            string artistLink = string.IsNullOrEmpty(s.ArtistId) ? null : @"https://www.pixiv.net/member.php?id=" + s.ArtistId;
-            string authorline = string.IsNullOrEmpty(s.ArtistName) ? null : $" by [{s.ArtistName}]({artistLink})";
-
-            return new EmbedFieldBuilder
-            {
-                Name = s.SiteName,
-                Value = $"[{postTitle}]({s.SourcePostUrl})" + authorline,
-                IsInline = true,
-            };
-        });
+        var sauceEmbed = SourceContextCommand.MakeEmbedFromSauces(sauces);
 
         await interaction.ModifyOriginalResponseAsync(mp =>
         {
             mp.Embed = interaction.Message.Embeds.First()
                 .ToEmbedBuilder()
-                .WithDescription(saucesFields.Any() ? "Sauce:" : "No sauces found")
-                .WithFields(saucesFields)
+                .WithDescription(sauceEmbed.Description)
+                .WithFields(sauceEmbed.Fields)
                 .Build();
         });
     }

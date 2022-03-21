@@ -27,20 +27,11 @@ public class SauceClient : ISauceClient
             .ThenByDescending(r => r.DatabaseName == "Twitter")
             .ThenByDescending(r => r.DatabaseName == "E-Hentai")
             .ThenByDescending(r => Convert.ToDouble(r.Similarity, CultureInfo.InvariantCulture))
-            .GroupBy(r => r.DatabaseName)
-            .Select(group => group.First());
+            .DistinctBy(r => r.DatabaseName);
 
-        sauces = sauces.Where(s => s.DatabaseName is "Pixiv" or "Twitter" or "E-hentai" or "Yande.re");
+        //sauces = sauces.Where(s => s.DatabaseName is "Pixiv" or "Twitter" or "E-hentai" or "Yande.re");
 
-        return sauces.Select(s => new SauceData
-        {
-            Title = s.Properties.FirstOrDefault(p => p.Name == "Title" || s.DatabaseName == "E-hentai" && p.Name == "Source")?.Value,
-            ArtistName = s.Properties.FirstOrDefault(p => p.Name is "MemberName" or "Creator")?.Value,
-            ArtistId = s.Properties.FirstOrDefault(p => p.Name == "MemberId")?.Value,
-            SourcePostUrl = s.DatabaseName == "E-hentai" ? Uri.EscapeUriString("https://e-hentai.org/?f_search=" + s.InnerSource) : s.SourceURL,
-            ThumbnailUrl = s.ThumbnailURL,
-            SiteName = s.DatabaseName,
-        });
+        return sauces.Select(s => new SauceData(url, s));
     }
 
     public async Task<IEnumerable<(string Url, IEnumerable<SauceData> Sauces)>> GetSauce(IEnumerable<string> urls)
