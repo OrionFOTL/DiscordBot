@@ -5,7 +5,7 @@ using DiscordBot.Services.Interface;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 
-namespace DiscordBot.Services;
+namespace DiscordBot.Services.Tags;
 
 public class GelbooruWebTagClient : ITagClient
 {
@@ -45,7 +45,7 @@ public class GelbooruWebTagClient : ITagClient
             return new[] { new Tag($"Error when autocompleting tags for '{tag}'", 0) };
         }
     }
-    
+
     [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
     private record JsonTag([property: JsonPropertyName("label")] string Name,
                        [property: JsonPropertyName("value")] string UnderscoredName,

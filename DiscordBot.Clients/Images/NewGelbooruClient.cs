@@ -3,7 +3,7 @@ using DiscordBot.Model;
 using DiscordBot.Services.Interface;
 using Microsoft.Extensions.Logging;
 
-namespace DiscordBot.Services;
+namespace DiscordBot.Services.Images;
 
 public class NewGelbooruClient : IBooruClient
 {

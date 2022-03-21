@@ -2,8 +2,10 @@ using Discord;
 using Discord.Commands;
 using Discord.Interactions;
 using Discord.WebSocket;
-using DiscordBot.Services;
+using DiscordBot.Services.Images;
 using DiscordBot.Services.Interface;
+using DiscordBot.Services.Source;
+using DiscordBot.Services.Tags;
 using Serilog;
 using Serilog.Events;
 
