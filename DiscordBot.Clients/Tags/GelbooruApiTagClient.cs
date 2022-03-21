@@ -5,7 +5,7 @@ using DiscordBot.Services.Interface;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 
-namespace DiscordBot.Services;
+namespace DiscordBot.Services.Tags;
 
 public class GelbooruApiTagClient : ITagClient
 {

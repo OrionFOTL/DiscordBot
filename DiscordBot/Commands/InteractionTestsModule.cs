@@ -19,6 +19,29 @@ public class InteractionTestsModule : InteractionModuleBase<SocketInteractionCon
         await RespondAsync("Here's a button!", components: builder.Build());
     }
 
+    [SlashCommand("spawnmenu", "Spawns select menu")]
+    public async Task SpawnMenu()
+    {
+        var menuBuilder = new SelectMenuBuilder()
+            .WithPlaceholder("Select an option")
+            .WithCustomId("menu-1")
+            .WithMinValues(1)
+            .WithMaxValues(1)
+            .AddOption("Option A", "opt-a", "Option B is lying!")
+            .AddOption("Option B", "opt-b", "Option A is telling the truth!", new Emoji("🍌"));
+
+        var builder = new ComponentBuilder()
+            .WithSelectMenu(menuBuilder);
+
+        await RespondAsync("Whos really lying?", components: builder.Build());
+    }
+
+    [ComponentInteraction("menu-*")]
+    public async Task HandleSelected(string _, string[] values)
+    {
+        await RespondAsync("Chosen options: " + string.Join(',', values));
+    }
+
     [SlashCommand("kek2", "posts a cat")]
     public async Task Kitty(string name)
     {

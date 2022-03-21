@@ -5,4 +5,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="SauceNET" Version="1.1.1" />
+  </ItemGroup>
+
 </Project>
