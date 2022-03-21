@@ -63,7 +63,7 @@ public class SauceData
     }
 
     public string ImageUrl { get; set; }
-    
+
     public string SiteName { get; set; }
 
     public Site Site { get; set; }
@@ -73,7 +73,7 @@ public class SauceData
     public string Title { get; set; } = "Post";
 
     public Uri SourcePostUrl { get; set; }
-    
+
     public string ArtistName { get; set; }
 
     public Uri ArtistUrl { get; set; }

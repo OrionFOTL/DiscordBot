@@ -4,7 +4,7 @@ using Discord.WebSocket;
 using DiscordBot.Model;
 using DiscordBot.Services.Interface;
 
-namespace DiscordBot.Commands;
+namespace DiscordBot.Commands.Sauce;
 
 public class SourceContextCommand : InteractionModuleBase<SocketInteractionContext>
 {
@@ -48,7 +48,7 @@ public class SourceContextCommand : InteractionModuleBase<SocketInteractionConte
             }));
     }
 
-    public static List<string> ExtractImageUrlsFromMessage(SocketUserMessage message)
+    public static List<string> ExtractImageUrlsFromMessage(IUserMessage message)
     {
         List<string> imageUrls = new();
 

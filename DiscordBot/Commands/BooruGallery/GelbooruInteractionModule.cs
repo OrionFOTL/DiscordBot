@@ -1,6 +1,7 @@
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
+using DiscordBot.Commands.Sauce;
 using DiscordBot.Model;
 using DiscordBot.Services.Interface;
 
