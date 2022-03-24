@@ -14,7 +14,7 @@ public class SauceData
         {
             "Pixiv" => Site.Pixiv,
             "Twitter" => Site.Twitter,
-            "E-hentai" => Site.Ehentai,
+            "E-hentai" or "nHentai" => Site.Ehentai,
             "Yande.re" => Site.Yandere,
             "Gelbooru" => Site.Gelbooru,
             "Danbooru" => Site.Danbooru,
@@ -32,7 +32,7 @@ public class SauceData
                 var artistId = result.Properties.FirstOrDefault(p => p.Name == "MemberId")?.Value;
                 if (artistId != null)
                 {
-                    ArtistUrl = new Uri($"https://www.pixiv.net/en/users/{artistId}/artworks");
+                    ArtistUrl = new Uri($"https://www.pixiv.net/en/users/{artistId}");
                 }
                 break;
             case Site.Twitter:
@@ -48,7 +48,7 @@ public class SauceData
             case Site.Danbooru:
             case Site.Other:
             default:
-                SourcePostUrl = new Uri(result.SourceURL);
+                SourcePostUrl = new Uri(result.SourceURL ?? "about:blank");
                 break;
         }
 
