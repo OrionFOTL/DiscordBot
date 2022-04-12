@@ -2,6 +2,7 @@ using Discord;
 using Discord.Commands;
 using Discord.Interactions;
 using Discord.WebSocket;
+using DiscordBot.Model;
 using DiscordBot.Services.Images;
 using DiscordBot.Services.Interface;
 using DiscordBot.Services.Source;
@@ -45,9 +46,11 @@ public static class Program
         Host.CreateDefaultBuilder(args)
             .UseSystemd()
             .UseSerilog()
-            .ConfigureServices(services =>
+            .ConfigureServices((builder, services) =>
             {
                 services.AddHostedService<Worker>()
+                        .Configure<GuildConfigs>(builder.Configuration.GetSection(nameof(GuildConfigs)))
+                        .Configure<Tokens>(builder.Configuration.GetSection(nameof(Tokens)))
                         .ConfigureBotServices();
             });
 

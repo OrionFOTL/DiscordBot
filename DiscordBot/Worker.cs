@@ -3,13 +3,15 @@ using Discord;
 using Discord.Commands;
 using Discord.Interactions;
 using Discord.WebSocket;
+using DiscordBot.Model;
+using Microsoft.Extensions.Options;
 
 namespace DiscordBot;
 
 public class Worker : BackgroundService
 {
     private readonly string _discordBotToken;
-    private readonly ulong[] _guildIds;
+    private readonly List<GuildConfig> _guilds;
 
     private readonly ILogger<Worker> _logger;
     private readonly DiscordSocketClient _discordClient;
@@ -18,15 +20,16 @@ public class Worker : BackgroundService
     private readonly IServiceProvider _serviceProvider;
 
     public Worker(
-        IConfiguration configuration,
         ILogger<Worker> logger,
+        IOptions<Tokens> tokens,
+        IOptions<GuildConfigs> guildConfig,
         DiscordSocketClient discordClient,
         CommandService textCommandService,
         InteractionService interactionService,
         IServiceProvider serviceProvider)
     {
-        _discordBotToken = configuration["DiscordBotToken"];
-        _guildIds = configuration.GetSection("Guilds").Get<ulong[]>();
+        _discordBotToken = tokens.Value.DiscordBotToken;
+        _guilds = guildConfig.Value.Guilds;
 
         _logger = logger;
         _discordClient = discordClient;
@@ -47,8 +50,11 @@ public class Worker : BackgroundService
         _textCommandService.CommandExecuted += CommandExecuted;
         _interactionService.Log += Client_Log;
 
-        await _textCommandService.AddModulesAsync(Assembly.GetExecutingAssembly(), _serviceProvider);
-        await _interactionService.AddModulesAsync(Assembly.GetExecutingAssembly(), _serviceProvider);
+        using (var serviceScope = _serviceProvider.CreateScope())
+        {
+            await _textCommandService.AddModulesAsync(Assembly.GetExecutingAssembly(), serviceScope.ServiceProvider);
+            await _interactionService.AddModulesAsync(Assembly.GetExecutingAssembly(), serviceScope.ServiceProvider);
+        }
 
         await _discordClient.LoginAsync(TokenType.Bot, _discordBotToken);
         await _discordClient.StartAsync();
@@ -64,9 +70,9 @@ public class Worker : BackgroundService
 
     private async Task RegisterSlashCommandsToGuilds()
     {
-        foreach (var guildId in _guildIds)
+        foreach (var guild in _guilds)
         {
-            await _interactionService.RegisterCommandsToGuildAsync(guildId);
+            await _interactionService.RegisterCommandsToGuildAsync(guild.GuildId);
         }
     }
 
