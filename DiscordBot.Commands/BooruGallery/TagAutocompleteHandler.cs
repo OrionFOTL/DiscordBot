@@ -3,6 +3,7 @@ using Discord;
 using Discord.Interactions;
 using DiscordBot.Model;
 using DiscordBot.Services.Interface;
+using Microsoft.Extensions.Logging;
 
 namespace DiscordBot.Commands.BooruGallery;
 
