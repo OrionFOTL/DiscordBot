@@ -48,6 +48,7 @@ public class Worker : BackgroundService
         _discordClient.MessageReceived += HandleMessageReceived;
         _discordClient.InteractionCreated += HandleInteractionCreated;
         _discordClient.ReactionAdded += HandleReactionAdded;
+        _discordClient.ChannelUpdated += HandleChannelUpdated;
 
         _textCommandService.CommandExecuted += CommandExecuted;
         _interactionService.Log += Client_Log;
@@ -156,7 +157,7 @@ public class Worker : BackgroundService
             return;
         }
 
-        RestUserMessage message = (RestUserMessage)await cachedMessage.GetOrDownloadAsync();
+        IUserMessage message = await cachedMessage.GetOrDownloadAsync();
         ReactionMetadata reactionMetadata = message.Reactions[new Emoji("📌")];
         if (reactionMetadata.ReactionCount > 1)
         {
@@ -164,9 +165,15 @@ public class Worker : BackgroundService
         }
 
         IUser pinner = await _discordClient.GetUserAsync(reaction.UserId);
-        ITextChannel pinChannel = await guildChannel.Guild.GetTextChannelAsync(guildConfig.PinChannelId.Value);
 
-        await pinChannel.SendMessageAsync(embed: new EmbedBuilder
+        await PinMessage(guildChannel, message, pinner, guildConfig.PinChannelId.Value);
+    }
+
+    private static async Task PinMessage(IGuildChannel guildChannel, IUserMessage message, IUser pinner, ulong pinChannelId)
+    {
+        ITextChannel pinChannel = await guildChannel.Guild.GetTextChannelAsync(pinChannelId);
+
+        var embedBuilder = new EmbedBuilder
         {
             Author = new EmbedAuthorBuilder
             {
@@ -174,16 +181,61 @@ public class Worker : BackgroundService
                 IconUrl = message.Author.GetAvatarUrl()
             },
             Description = message.Content,
-            Footer = new EmbedFooterBuilder
-            {
-                Text = $"Pinned by {pinner.Username}",
-                IconUrl = pinner.GetAvatarUrl()
-            },
             Timestamp = DateTime.UtcNow,
             ImageUrl = message.Attachments.FirstOrDefault()?.Url,
             Title = "Jump to original message",
             Url = message.GetJumpUrl(),
-        }.Build());
+        };
+
+        if (pinner is not null)
+        {
+            embedBuilder.Footer = new EmbedFooterBuilder
+            {
+                Text = $"Pinned by {pinner.Username}",
+                IconUrl = pinner.GetAvatarUrl()
+            };
+        }
+
+        await pinChannel.SendMessageAsync(embed: embedBuilder.Build());
+    }
+
+    private async Task HandleChannelUpdated(SocketChannel channelBefore, SocketChannel channelAfter)
+    {
+        if (channelBefore is not IMessageChannel messageChannelBefore
+            || channelAfter is not IMessageChannel messageChannelAfter
+            || channelBefore is not IGuildChannel guildChannel)
+        {
+            return;
+        }
+
+        var pinsBefore = await messageChannelBefore.GetPinnedMessagesAsync();
+        var pinsAfter = await messageChannelAfter.GetPinnedMessagesAsync();
+
+        if (pinsBefore.Count >= pinsAfter.Count)
+        {
+            return;
+        }
+
+        IEnumerable<IMessage> newPins = pinsAfter.ExceptBy(pinsBefore.Select(msg => msg.Id), msg => msg.Id);
+        IUserMessage newPin = newPins.OfType<IUserMessage>().Single();
+
+        IEnumerable<IMessage> last2messages = await messageChannelAfter.GetMessagesAsync(2).FlattenAsync();
+        IMessage systemMessage = last2messages.LastOrDefault(m => m.Source == MessageSource.System);
+        if (systemMessage is not null)
+        {
+            await systemMessage.DeleteAsync();
+        }
+
+        await newPin.UnpinAsync();
+
+        ulong? guildPinChannelId = _guilds.FirstOrDefault(g => g.GuildId == guildChannel.GuildId).PinChannelId;
+        if (guildPinChannelId is null)
+        {
+            return;
+        }
+
+        await PinMessage(guildChannel, newPin, null, guildPinChannelId.Value);
+
     }
 
     private Task CommandExecuted(Optional<CommandInfo> commandInfo, ICommandContext commandContext, Discord.Commands.IResult result)
