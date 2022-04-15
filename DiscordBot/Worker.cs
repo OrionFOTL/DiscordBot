@@ -1,6 +1,7 @@
-using Discord;
+﻿using Discord;
 using Discord.Commands;
 using Discord.Interactions;
+using Discord.Rest;
 using Discord.WebSocket;
 using DiscordBot.Commands;
 using DiscordBot.Model;
@@ -46,6 +47,7 @@ public class Worker : BackgroundService
         _discordClient.Ready += RegisterSlashCommandsToGuilds;
         _discordClient.MessageReceived += HandleMessageReceived;
         _discordClient.InteractionCreated += HandleInteractionCreated;
+        _discordClient.ReactionAdded += HandleReactionAdded;
 
         _textCommandService.CommandExecuted += CommandExecuted;
         _interactionService.Log += Client_Log;
@@ -125,6 +127,63 @@ public class Worker : BackgroundService
 
         var interactionContext = new SocketInteractionContext(_discordClient, interaction);
         await _interactionService.ExecuteCommandAsync(interactionContext, _serviceProvider);
+    }
+
+    private async Task HandleReactionAdded(Cacheable<IUserMessage, ulong> cachedMessage, Cacheable<IMessageChannel, ulong> cachedChannel, SocketReaction reaction)
+    {
+        if (reaction.Emote.Name is not "📌")
+        {
+            return;
+        }
+
+        IMessageChannel channel = await cachedChannel.GetOrDownloadAsync();
+        if (channel is not IGuildChannel guildChannel)
+        {
+            return;
+        }
+
+        var guildConfig = _guilds.FirstOrDefault(g => g.GuildId == guildChannel.GuildId);
+
+        if (guildConfig is null)
+        {
+            _logger.LogInformation("Pin reaction received in guild {guildName}, but guild isn't defined", guildChannel.Guild.Name);
+            return;
+        }
+
+        if (guildConfig.PinChannelId is null)
+        {
+            _logger.LogInformation("Pin reaction received in guild {guildName}, but guild doesn't have a pin channel defined", guildChannel.Guild.Name);
+            return;
+        }
+
+        RestUserMessage message = (RestUserMessage)await cachedMessage.GetOrDownloadAsync();
+        ReactionMetadata reactionMetadata = message.Reactions[new Emoji("📌")];
+        if (reactionMetadata.ReactionCount > 1)
+        {
+            return;
+        }
+
+        IUser pinner = await _discordClient.GetUserAsync(reaction.UserId);
+        ITextChannel pinChannel = await guildChannel.Guild.GetTextChannelAsync(guildConfig.PinChannelId.Value);
+
+        await pinChannel.SendMessageAsync(embed: new EmbedBuilder
+        {
+            Author = new EmbedAuthorBuilder
+            {
+                Name = message.Author.Username,
+                IconUrl = message.Author.GetAvatarUrl()
+            },
+            Description = message.Content,
+            Footer = new EmbedFooterBuilder
+            {
+                Text = $"Pinned by {pinner.Username}",
+                IconUrl = pinner.GetAvatarUrl()
+            },
+            Timestamp = DateTime.UtcNow,
+            ImageUrl = message.Attachments.FirstOrDefault()?.Url,
+            Title = "Jump to original message",
+            Url = message.GetJumpUrl(),
+        }.Build());
     }
 
     private Task CommandExecuted(Optional<CommandInfo> commandInfo, ICommandContext commandContext, Discord.Commands.IResult result)
