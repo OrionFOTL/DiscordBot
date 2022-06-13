@@ -18,7 +18,7 @@ public class EggplantModule : ModuleBase<SocketCommandContext>
         await Context.Message.AddReactionAsync(new Emoji("💫"));
     }
 
-    [Command("thicc")]
+    //[Command("thicc")]
     public async Task ThiccenThis([Remainder] string textToThiccen)
     {
         var embed = new EmbedBuilder
