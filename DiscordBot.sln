@@ -5,11 +5,9 @@ VisualStudioVersion = 17.0.31919.166
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DiscordBot", "DiscordBot\DiscordBot.csproj", "{748CAD93-02B0-4254-BA57-3AB12098F3F1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DiscordBot.Services", "DiscordBot.Clients\DiscordBot.Services.csproj", "{BD8DCB33-C601-4831-B5F6-786973C7C0E3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DiscordBot.Services", "DiscordBot.Services\DiscordBot.Services.csproj", "{BD8DCB33-C601-4831-B5F6-786973C7C0E3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DiscordBot.Model", "DiscordBot.Model\DiscordBot.Model.csproj", "{3FD050BA-EB47-43E6-B70D-344E33FB8E4B}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DiscordBot.Services.Interface", "DiscordBot.Clients.Interface\DiscordBot.Services.Interface.csproj", "{ABA031B0-14B0-4301-B5B4-B4D11BA7CE6B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DiscordBot.Features", "DiscordBot.Features\DiscordBot.Features.csproj", "{1AA1A289-0286-46C2-865A-0A6C50A4693B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -25,14 +23,10 @@ Global
 		{BD8DCB33-C601-4831-B5F6-786973C7C0E3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BD8DCB33-C601-4831-B5F6-786973C7C0E3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BD8DCB33-C601-4831-B5F6-786973C7C0E3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3FD050BA-EB47-43E6-B70D-344E33FB8E4B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3FD050BA-EB47-43E6-B70D-344E33FB8E4B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3FD050BA-EB47-43E6-B70D-344E33FB8E4B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3FD050BA-EB47-43E6-B70D-344E33FB8E4B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{ABA031B0-14B0-4301-B5B4-B4D11BA7CE6B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{ABA031B0-14B0-4301-B5B4-B4D11BA7CE6B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{ABA031B0-14B0-4301-B5B4-B4D11BA7CE6B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{ABA031B0-14B0-4301-B5B4-B4D11BA7CE6B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1AA1A289-0286-46C2-865A-0A6C50A4693B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1AA1A289-0286-46C2-865A-0A6C50A4693B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1AA1A289-0286-46C2-865A-0A6C50A4693B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1AA1A289-0286-46C2-865A-0A6C50A4693B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,34 +1,25 @@
 using Discord;
-using Discord.Commands;
 using Discord.Interactions;
 using Discord.WebSocket;
-using DiscordBot.Services.Images;
-using DiscordBot.Services.Interface;
-using DiscordBot.Services.Source;
-using DiscordBot.Services.Tags;
+using DiscordBot.Extensions;
+using DiscordBot.Services.ArtGallery.Images;
+using DiscordBot.Services.ArtGallery.Source;
+using DiscordBot.Services.ArtGallery.Tags;
 using Serilog;
-using Serilog.Events;
 
 namespace DiscordBot;
 
-public static class Program
+internal static class Program
 {
     public static void Main(string[] args)
     {
         Log.Logger = new LoggerConfiguration()
-               .MinimumLevel.Debug()
-               .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
-               .Enrich.FromLogContext()
-               .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3} {SourceContext}] {Message:lj}{NewLine}{Exception}")
-               .WriteTo.File(
-                    Path.Combine(Path.GetTempPath(), "discordLog", "discordBot.txt"),
-                    outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3} {SourceContext}] {Message:lj}{NewLine}{Exception}",
-                    rollingInterval: RollingInterval.Day)
-               .CreateLogger();
+            .WriteTo.Console()
+            .WriteTo.File("fatalLog.txt")
+            .CreateBootstrapLogger();
 
         try
         {
-            Log.Information("Starting host");
             CreateHostBuilder(args).Build().Run();
         }
         catch (Exception ex)
@@ -44,28 +35,31 @@ public static class Program
     public static IHostBuilder CreateHostBuilder(string[] args) =>
         Host.CreateDefaultBuilder(args)
             .UseSystemd()
-            .UseSerilog()
-            .ConfigureServices(services =>
+            .UseSerilog((builder, config) => config.ReadFrom.Configuration(builder.Configuration))
+            .ConfigureServices((builder, services) =>
             {
-                services.AddHostedService<Worker>()
-                        .ConfigureBotServices();
+                services.AddHostedService<BotStartup>()
+                        .AddAndValidateOptions<BotConfig>()
+                        .AddAndValidateOptions<SaucenaoConfig>()
+                        .AddBotServices();
             });
 
-    private static void ConfigureBotServices(this IServiceCollection services)
+    private static IServiceCollection AddBotServices(this IServiceCollection services)
     {
-        DiscordSocketConfig clientConfig = new()
+        var discordSocketConfig = new DiscordSocketConfig
         {
             GatewayIntents = GatewayIntents.AllUnprivileged
                              & ~GatewayIntents.GuildScheduledEvents
                              & ~GatewayIntents.GuildInvites
         };
 
-        services.AddSingleton<HttpClient>()
-                .AddSingleton(new DiscordSocketClient(clientConfig))
-                .AddSingleton<CommandService>()
+        services.AddHttpClient()
+                .AddSingleton(new DiscordSocketClient(discordSocketConfig))
                 .AddSingleton<InteractionService>()
-                .AddSingleton<IBooruClient, NewGelbooruClient>()
-                .AddSingleton<ISauceClient, SauceClient>()
-                .AddSingleton<ITagClient, GelbooruWebTagClient>();
+                .AddTransient<IBooruClient, NewGelbooruClient>()
+                .AddTransient<ISauceClient, SauceClient>()
+                .AddTransient<ITagClient, GelbooruWebTagClient>();
+
+        return services;
     }
 }
