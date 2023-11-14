@@ -5,6 +5,7 @@
     <UserSecretsId>dotnet-DiscordBot-49A1AB69-A5E4-4610-BCAC-976E1ECA9C4B</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <ImplicitUsings>enable</ImplicitUsings>
+	<PublishSingleFile>true</PublishSingleFile>
     <DebugType>embedded</DebugType>
 	<ServerGarbageCollection>true</ServerGarbageCollection>
   </PropertyGroup>
