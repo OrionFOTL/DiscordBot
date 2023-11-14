@@ -5,22 +5,15 @@ using DiscordBot.Services.ArtGallery.Source;
 
 namespace DiscordBot.Commands.Sauce;
 
-public class SourceContextCommand : InteractionModuleBase<SocketInteractionContext>
+public class SourceContextCommand(ISauceClient sauceClient) : InteractionModuleBase<SocketInteractionContext>
 {
-    private readonly ISauceClient _sauceClient;
-
-    public SourceContextCommand(ISauceClient sauceClient)
-    {
-        _sauceClient = sauceClient;
-    }
-
     [MessageCommand("Get image sauce")]
     public async Task GetSauce(SocketUserMessage message)
     {
         await DeferAsync();
         List<string> imageUrls = ExtractImageUrlsFromMessage(message);
 
-        var urlsWithSauce = await _sauceClient.GetSauce(imageUrls);
+        var urlsWithSauce = await sauceClient.GetSauce(imageUrls);
 
         var embeds = urlsWithSauce.Select(s => MakeEmbedFromSauces(s.Sauces)
             .WithImageUrl(s.Url)
@@ -49,25 +42,25 @@ public class SourceContextCommand : InteractionModuleBase<SocketInteractionConte
 
     public static List<string> ExtractImageUrlsFromMessage(IUserMessage message)
     {
-        List<string> imageUrls = new();
+        List<string> imageUrls =
+        [
+            .. message.Embeds
+                .GroupBy(e => e.Url)
+                .Select(eg =>
+                {
+                    var firstEmbed = eg.FirstOrDefault();
 
-        imageUrls.AddRange(message.Embeds
-            .GroupBy(e => e.Url)
-            .Select(eg =>
-            {
-                var firstEmbed = eg.FirstOrDefault();
-
-                return EndsWithImageExtension(firstEmbed.Image.GetValueOrDefault().Url)
-                    ? firstEmbed.Image.GetValueOrDefault().Url
-                    : EndsWithImageExtension(firstEmbed.Url)
-                        ? firstEmbed.Url
-                        : EndsWithImageExtension(firstEmbed.Thumbnail?.Url)
-                            ? firstEmbed.Thumbnail?.Url
-                            : null;
-            }));
-
-        imageUrls.AddRange(message.Attachments.Where(a => EndsWithImageExtension(a.Url))
-                                           .Select(a => a.Url));
+                    return EndsWithImageExtension(firstEmbed.Image.GetValueOrDefault().Url)
+                        ? firstEmbed.Image.GetValueOrDefault().Url
+                        : EndsWithImageExtension(firstEmbed.Url)
+                            ? firstEmbed.Url
+                            : EndsWithImageExtension(firstEmbed.Thumbnail?.Url)
+                                ? firstEmbed.Thumbnail?.Url
+                                : null;
+                }),
+            .. message.Attachments.Where(a => EndsWithImageExtension(a.Url))
+                                  .Select(a => a.Url),
+        ];
         return imageUrls;
     }
 

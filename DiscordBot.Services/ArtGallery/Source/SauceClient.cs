@@ -4,16 +4,11 @@ using SauceNET;
 
 namespace DiscordBot.Services.ArtGallery.Source;
 
-public class SauceClient : ISauceClient
+public class SauceClient(IOptions<SaucenaoConfig> options) : ISauceClient
 {
     private const double _minimumSimilarity = 80d;
 
-    private readonly SauceNETClient _sauceClient;
-
-    public SauceClient(IOptions<SaucenaoConfig> options)
-    {
-        _sauceClient = new SauceNETClient(options.Value.ApiKey);
-    }
+    private readonly SauceNETClient _sauceClient = new(options.Value.ApiKey);
 
     public async Task<IEnumerable<SauceData>> GetSauce(string url)
     {

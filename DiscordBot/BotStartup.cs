@@ -7,55 +7,40 @@ using Microsoft.Extensions.Options;
 
 namespace DiscordBot;
 
-internal class BotStartup : BackgroundService
+internal class BotStartup(
+    ILogger<BotStartup> logger,
+    IOptions<BotConfig> botConfig,
+    DiscordSocketClient discordClient,
+    InteractionService interactionService,
+    IServiceProvider serviceProvider) : BackgroundService
 {
-    private readonly string _discordBotToken;
-
-    private readonly ILogger<BotStartup> _logger;
-    private readonly DiscordSocketClient _discordClient;
-    private readonly InteractionService _interactionService;
-    private readonly IServiceProvider _serviceProvider;
-
-    public BotStartup(
-        ILogger<BotStartup> logger,
-        IOptions<BotConfig> botConfig,
-        DiscordSocketClient discordClient,
-        InteractionService interactionService,
-        IServiceProvider serviceProvider)
-    {
-        _discordBotToken = botConfig.Value.BotToken;
-
-        _logger = logger;
-        _discordClient = discordClient;
-        _interactionService = interactionService;
-        _serviceProvider = serviceProvider;
-    }
+    private readonly string _discordBotToken = botConfig.Value.BotToken;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation("Starting discord bot");
+        logger.LogInformation("Starting discord bot");
 
-        _discordClient.Log += Log;
-        _discordClient.Ready += RegisterSlashCommandsToGuilds;
-        _discordClient.InteractionCreated += HandleInteraction;
+        discordClient.Log += Log;
+        discordClient.Ready += RegisterSlashCommandsToGuilds;
+        discordClient.InteractionCreated += HandleInteraction;
 
-        _interactionService.Log += Log;
+        interactionService.Log += Log;
 
-        using (var serviceScope = _serviceProvider.CreateScope())
+        using (var serviceScope = serviceProvider.CreateScope())
         {
-            await _interactionService.AddModulesAsync(typeof(InteractionTestsModule).Assembly, serviceScope.ServiceProvider);
+            await interactionService.AddModulesAsync(typeof(InteractionTestsModule).Assembly, serviceScope.ServiceProvider);
         }
 
-        await _discordClient.LoginAsync(TokenType.Bot, _discordBotToken);
-        await _discordClient.StartAsync();
+        await discordClient.LoginAsync(TokenType.Bot, _discordBotToken);
+        await discordClient.StartAsync();
     }
 
-    public override async Task StopAsync(CancellationToken cancellationToken) => await _discordClient.StopAsync();
+    public override async Task StopAsync(CancellationToken cancellationToken) => await discordClient.StopAsync();
 
     private Task Log(LogMessage log)
     {
-        using var scope = _logger.BeginScope(log);
-        _logger.Log(log.Severity.ToLogLevel(), "{message}", log);
+        using var scope = logger.BeginScope(log);
+        logger.Log(log.Severity.ToLogLevel(), "{message}", log);
         return Task.CompletedTask;
     }
 
@@ -70,7 +55,7 @@ internal class BotStartup : BackgroundService
 
         foreach (var guildId in guildIds)
         {
-            await _interactionService.RegisterCommandsToGuildAsync(guildId);
+            await interactionService.RegisterCommandsToGuildAsync(guildId);
         }
     }
 
@@ -79,14 +64,14 @@ internal class BotStartup : BackgroundService
         switch (interaction)
         {
             case IComponentInteraction messageComponent:
-                _logger.LogInformation(
+                logger.LogInformation(
                     "Interaction received from user: {user}, type: {interactionType}, buttonId: {buttonId}",
                     messageComponent.User,
                     messageComponent.Type,
                     messageComponent.Data.CustomId);
                 break;
             case IAutocompleteInteraction autocompleteInteraction:
-                _logger.LogInformation(
+                logger.LogInformation(
                     "Interaction received from user: {user}, type: {interactionType}, slash command: {command}, argument: {argument}",
                     autocompleteInteraction.User,
                     autocompleteInteraction.Type,
@@ -94,7 +79,7 @@ internal class BotStartup : BackgroundService
                     autocompleteInteraction.Data.Current.Value);
                 break;
             case ISlashCommandInteraction slashCommandInteraction:
-                _logger.LogInformation(
+                logger.LogInformation(
                     "Interaction received from user: {user}, type: {interactionType}, slash command: {command}, arguments: {@arguments}",
                     slashCommandInteraction.User,
                     slashCommandInteraction.Type,
@@ -103,7 +88,7 @@ internal class BotStartup : BackgroundService
                 break;
         }
 
-        var interactionContext = new SocketInteractionContext(_discordClient, interaction);
-        await _interactionService.ExecuteCommandAsync(interactionContext, _serviceProvider);
+        var interactionContext = new SocketInteractionContext(discordClient, interaction);
+        await interactionService.ExecuteCommandAsync(interactionContext, serviceProvider);
     }
 }

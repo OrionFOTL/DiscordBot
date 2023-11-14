@@ -4,16 +4,10 @@ using Microsoft.Extensions.Logging;
 
 namespace DiscordBot.Services.ArtGallery.Images;
 
-public class NewGelbooruClient : IBooruClient
+public class NewGelbooruClient(ILogger<NewGelbooruClient> logger) : IBooruClient
 {
-    private readonly Gelbooru _gelbooru;
-    private readonly ILogger<NewGelbooruClient> _logger;
-
-    public NewGelbooruClient(ILogger<NewGelbooruClient> logger)
-    {
-        _gelbooru = new Gelbooru();
-        _logger = logger;
-    }
+    private readonly Gelbooru _gelbooru = new();
+    private readonly ILogger<NewGelbooruClient> _logger = logger;
 
     public Task<Art> GetImageAsync(int amount, int page, bool top = true, bool noVideo = true, bool allowNsfw = false, params string[] contentTags)
     {

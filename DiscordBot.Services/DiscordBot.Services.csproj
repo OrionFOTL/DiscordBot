@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <DebugType>embedded</DebugType>
   </PropertyGroup>
@@ -9,8 +9,8 @@
   <ItemGroup>
     <PackageReference Include="BooruDex" Version="2.3.0" />
     <PackageReference Include="BooruSharp" Version="3.6.0" />
-    <PackageReference Include="Microsoft.Extensions.Http" Version="7.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
     <PackageReference Include="SauceNET" Version="1.1.1" />
   </ItemGroup>
 

@@ -1,5 +1,4 @@
 ﻿using System.Text;
-using BooruDex.Booru;
 using BooruDex.Booru.Client;
 using BooruDex.Exceptions;
 using DiscordBot.Services.ArtGallery.Tags;
@@ -8,7 +7,7 @@ namespace DiscordBot.Services.ArtGallery.Images;
 
 public class LegacyBooruClient : IBooruClient
 {
-    private readonly Booru _booru;
+    private readonly Gelbooru _booru;
 
     public LegacyBooruClient()
     {
@@ -38,7 +37,7 @@ public class LegacyBooruClient : IBooruClient
 
         try
         {
-            var posts = await _booru.PostListAsync((byte)amount, tags.ToArray(), (uint)page);
+            var posts = await _booru.PostListAsync((byte)amount, [.. tags], (uint)page);
 
             return posts.Select(p => new Art
             {
@@ -68,7 +67,7 @@ public class LegacyBooruClient : IBooruClient
 
         return foundTags
             .OrderByDescending(t => t.Count)
-            .Where(t => t.Name != tag.ToLower())
+            .Where(t => !t.Name.Equals(tag, StringComparison.OrdinalIgnoreCase))
             .Take(3)
             .Select(t => new Tag(t.Name, t.Count, t.Name));
     }

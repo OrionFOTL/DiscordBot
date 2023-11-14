@@ -4,18 +4,9 @@ using Microsoft.Extensions.Logging;
 
 namespace DiscordBot.Services.ArtGallery.Tags;
 
-public class GelbooruWebTagClient : ITagClient
+public class GelbooruWebTagClient(ILogger<GelbooruWebTagClient> logger, IHttpClientFactory httpClientFactory) : ITagClient
 {
     private readonly Uri _tagApiUri = new(@"https://gelbooru.com/index.php?page=autocomplete2&type=tag_query");
-
-    private readonly ILogger<GelbooruWebTagClient> _logger;
-    private readonly IHttpClientFactory _httpClientFactory;
-
-    public GelbooruWebTagClient(ILogger<GelbooruWebTagClient> logger, IHttpClientFactory httpClientFactory)
-    {
-        _logger = logger;
-        _httpClientFactory = httpClientFactory;
-    }
 
     public async Task<IEnumerable<Tag>> GetSimilarTags(string tag)
     {
@@ -28,7 +19,7 @@ public class GelbooruWebTagClient : ITagClient
 
         try
         {
-            var tags = await _httpClientFactory.CreateClient().GetFromJsonAsync<JsonTag[]>(requestUri);
+            var tags = await httpClientFactory.CreateClient().GetFromJsonAsync<JsonTag[]>(requestUri);
 
             return tags?
                 .Where(t => t.PostCount > 0)
@@ -36,7 +27,7 @@ public class GelbooruWebTagClient : ITagClient
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Error when autocompleting tags for '{tag}'", tag);
+            logger.LogError(e, "Error when autocompleting tags for '{tag}'", tag);
             return new[] { new Tag($"Error when autocompleting tags for '{tag}'", 0) };
         }
     }

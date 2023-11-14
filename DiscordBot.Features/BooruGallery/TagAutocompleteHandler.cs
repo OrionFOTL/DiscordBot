@@ -5,17 +5,8 @@ using Microsoft.Extensions.Logging;
 
 namespace DiscordBot.Commands.BooruGallery;
 
-public class TagAutocompleteHandler : AutocompleteHandler
+public class TagAutocompleteHandler(ILogger<TagAutocompleteHandler> logger, ITagClient tagClient) : AutocompleteHandler
 {
-    private readonly ITagClient _tagClient;
-    private readonly ILogger<TagAutocompleteHandler> _logger;
-
-    public TagAutocompleteHandler(ITagClient tagClient, ILogger<TagAutocompleteHandler> logger)
-    {
-        _tagClient = tagClient;
-        _logger = logger;
-    }
-
     public override async Task<AutocompletionResult> GenerateSuggestionsAsync(IInteractionContext context, IAutocompleteInteraction autocompleteInteraction, IParameterInfo parameter, IServiceProvider services)
     {
         if (autocompleteInteraction.Data.Current.Value is not (string and { Length: > 1 } tag)
@@ -43,11 +34,11 @@ public class TagAutocompleteHandler : AutocompleteHandler
 
     private async Task<IEnumerable<Tag>> GetSimilarTags(string tag)
     {
-        _logger.LogWarning("Getting suggestions for tag: {tag}", tag);
+        logger.LogWarning("Getting suggestions for tag: {tag}", tag);
 
-        var tags = await _tagClient.GetSimilarTags(tag);
+        var tags = await tagClient.GetSimilarTags(tag);
 
-        _logger.LogWarning("Got suggestion: {suggestion} for tag: {tag}", tags.FirstOrDefault().CodedName, tag);
+        logger.LogWarning("Got suggestion: {suggestion} for tag: {tag}", tags.FirstOrDefault().CodedName, tag);
 
         return tags;
     }

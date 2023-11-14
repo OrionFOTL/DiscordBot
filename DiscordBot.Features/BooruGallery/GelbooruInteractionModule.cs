@@ -7,19 +7,10 @@ using DiscordBot.Services.ArtGallery.Source;
 
 namespace DiscordBot.Commands.BooruGallery;
 
-public class GelbooruInteractionModule : InteractionModuleBase<SocketInteractionContext>
+public class GelbooruInteractionModule(
+    IBooruClient booruClient,
+    ISauceClient sauceClient) : InteractionModuleBase<SocketInteractionContext>
 {
-    private readonly IBooruClient _booruClient;
-    private readonly ISauceClient _sauceClient;
-
-    public GelbooruInteractionModule(
-        IBooruClient booruClient,
-        ISauceClient sauceClient)
-    {
-        _booruClient = booruClient;
-        _sauceClient = sauceClient;
-    }
-
     [SlashCommand("random", "Start a gallery")]
     public async Task StartRandomGallery(
         [Autocomplete(typeof(TagAutocompleteHandler))] string tag1,
@@ -37,7 +28,7 @@ public class GelbooruInteractionModule : InteractionModuleBase<SocketInteraction
             _ => false,
         };
 
-        Art image = await _booruClient.GetRandomImageAsync(noVideo: true, allowNsfw, tags);
+        Art image = await booruClient.GetRandomImageAsync(noVideo: true, allowNsfw, tags);
         await fetchingReplyTask;
 
         if (image is null)
@@ -95,7 +86,7 @@ public class GelbooruInteractionModule : InteractionModuleBase<SocketInteraction
 
         var tags = longTags.Split(';');
         int requestedPage = int.Parse(currentPage) + (direction == "n" ? 1 : -1);
-        var updatedImage = await _booruClient.GetRandomImageAsync(noVideo: true, allowNsfw: allowNsfw, contentTags: tags.ToArray());
+        var updatedImage = await booruClient.GetRandomImageAsync(noVideo: true, allowNsfw: allowNsfw, contentTags: [.. tags]);
 
         await loadingMessageTask;
 
@@ -153,7 +144,7 @@ public class GelbooruInteractionModule : InteractionModuleBase<SocketInteraction
                                                   .Build();
         });
 
-        IEnumerable<SauceData> sauces = await _sauceClient.GetSauce(interaction.Message.Embeds.First().Image.Value.Url);
+        IEnumerable<SauceData> sauces = await sauceClient.GetSauce(interaction.Message.Embeds.First().Image.Value.Url);
 
         var sauceEmbed = SourceContextCommand.MakeEmbedFromSauces(sauces);
 
