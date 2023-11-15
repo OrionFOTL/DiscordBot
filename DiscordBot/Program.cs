@@ -2,9 +2,12 @@ using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
 using DiscordBot.Extensions;
+using DiscordBot.Features.DailyStats;
+using DiscordBot.Features.DailyStats.Charting;
 using DiscordBot.Services.ArtGallery.Images;
 using DiscordBot.Services.ArtGallery.Source;
 using DiscordBot.Services.ArtGallery.Tags;
+using Quartz;
 using Serilog;
 
 namespace DiscordBot;
@@ -41,10 +44,12 @@ internal static class Program
                 services.AddHostedService<BotStartup>()
                         .AddAndValidateOptions<BotConfig>()
                         .AddAndValidateOptions<SaucenaoConfig>()
-                        .AddBotServices();
+                        .AddAndValidateOptions<DailyStatsConfig>("DailyStats")
+                        .AddAndValidateOptions<QuartzOptions>("Quartz")
+                        .AddBotServices(builder.Configuration);
             });
 
-    private static IServiceCollection AddBotServices(this IServiceCollection services)
+    private static IServiceCollection AddBotServices(this IServiceCollection services, IConfiguration configuration)
     {
         var discordSocketConfig = new DiscordSocketConfig
         {
@@ -53,12 +58,22 @@ internal static class Program
                              & ~GatewayIntents.GuildInvites
         };
 
+        var discordSocketClient = new DiscordSocketClient(discordSocketConfig);
+
         services.AddHttpClient()
-                .AddSingleton(new DiscordSocketClient(discordSocketConfig))
+                .AddSingleton(discordSocketClient)
+                .AddSingleton<IDiscordClient>(discordSocketClient)
                 .AddSingleton<InteractionService>()
                 .AddTransient<IBooruClient, NewGelbooruClient>()
                 .AddTransient<ISauceClient, SauceClient>()
-                .AddTransient<ITagClient, GelbooruWebTagClient>();
+                .AddTransient<ITagClient, GelbooruWebTagClient>()
+                .AddTransient<IDailyStatsChartProvider, DailyStatsChartProvider>()
+                .AddQuartz(o => 
+                    o.ScheduleJob<DailyStatsJob>(trigger => trigger
+                        .WithIdentity(nameof(DailyStatsJob))
+                        .StartNow()
+                        .WithCronSchedule(configuration["DailyStats:Cron"])))
+                .AddQuartzHostedService();
 
         return services;
     }
