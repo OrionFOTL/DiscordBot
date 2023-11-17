@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
+	<Nullable>enable</Nullable>
     <UserSecretsId>dotnet-DiscordBot-49A1AB69-A5E4-4610-BCAC-976E1ECA9C4B</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
 	<PublishSingleFile>true</PublishSingleFile>

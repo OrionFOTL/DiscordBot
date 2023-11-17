@@ -19,7 +19,7 @@ public class NewGelbooruClient(ILogger<NewGelbooruClient> logger) : IBooruClient
         throw new NotImplementedException();
     }
 
-    public async Task<Art> GetRandomImageAsync(bool noVideo = true, bool allowNsfw = false, params string[] contentTags)
+    public async Task<Art?> GetRandomImageAsync(bool noVideo = true, bool allowNsfw = false, params string[] contentTags)
     {
         var tags = contentTags.ToList();
 

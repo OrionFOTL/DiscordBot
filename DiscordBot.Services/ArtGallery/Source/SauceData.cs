@@ -66,17 +66,17 @@ public class SauceData
 
     public string ThumbnailUrl { get; set; }
 
-    public string Title { get; set; } = "Post";
+    public string? Title { get; set; } = "Post";
 
     public Uri SourcePostUrl { get; set; }
 
-    public string ArtistName { get; set; }
+    public string? ArtistName { get; set; }
 
-    public Uri ArtistUrl { get; set; }
+    public Uri? ArtistUrl { get; set; }
 
     public string LinkedPost { get; private set; }
 
-    public string Byline { get; private set; }
+    public string? Byline { get; private set; }
 }
 
 public enum Site

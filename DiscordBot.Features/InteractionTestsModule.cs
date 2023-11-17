@@ -11,7 +11,7 @@ namespace DiscordBot.Features;
 public class InteractionTestsModule : InteractionModuleBase<SocketInteractionContext>
 {
     [SlashCommand("spawner", "Posts a message with a button")]
-    public async Task Spawn(string ignored)
+    public async Task Spawn()
     {
         var builder = new ComponentBuilder()
             .WithButton("next", "my-id", style: ButtonStyle.Primary, emote: new Emoji("😊"));
@@ -43,7 +43,7 @@ public class InteractionTestsModule : InteractionModuleBase<SocketInteractionCon
     }
 
     [SlashCommand("kek2", "posts a cat")]
-    public async Task Kitty(string name)
+    public async Task Kitty()
     {
         await DeferAsync(true);
 

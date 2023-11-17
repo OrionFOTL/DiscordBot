@@ -14,10 +14,10 @@ public class GelbooruInteractionModule(
     [SlashCommand("random", "Start a gallery")]
     public async Task StartRandomGallery(
         [Autocomplete(typeof(TagAutocompleteHandler))] string tag1,
-        [Autocomplete(typeof(TagAutocompleteHandler))] string tag2 = null,
-        [Autocomplete(typeof(TagAutocompleteHandler))] string tag3 = null)
+        [Autocomplete(typeof(TagAutocompleteHandler))] string? tag2 = null,
+        [Autocomplete(typeof(TagAutocompleteHandler))] string? tag3 = null)
     {
-        var tags = new[] { tag1, tag2, tag3 }.Where(t => t is not null).Select(t => t.Trim().Replace(' ', '_')).ToArray();
+        var tags = new[] { tag1, tag2, tag3 }.OfType<string>().Select(t => t.Trim().Replace(' ', '_')).ToArray();
 
         Task fetchingReplyTask = Context.Interaction.RespondAsync(embed: new EmbedBuilder().WithDescription("Fetching...").Build(), allowedMentions: AllowedMentions.None);
 
@@ -28,7 +28,7 @@ public class GelbooruInteractionModule(
             _ => false,
         };
 
-        Art image = await booruClient.GetRandomImageAsync(noVideo: true, allowNsfw, tags);
+        Art? image = await booruClient.GetRandomImageAsync(noVideo: true, allowNsfw, tags);
         await fetchingReplyTask;
 
         if (image is null)

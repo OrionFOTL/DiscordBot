@@ -54,13 +54,6 @@ public class LegacyBooruClient : IBooruClient
         }
     }
 
-    public async Task<Art> GetImageAsync(int amount, int page, bool top = true, bool noVideo = true, bool allowNsfw = false, params string[] contentTags)
-    {
-        IEnumerable<Art> posts = await GetImagesAsync(amount, page, top, noVideo, allowNsfw, contentTags);
-
-        return posts.FirstOrDefault();
-    }
-
     public async Task<IEnumerable<Tag>> GetSimilarTags(string tag)
     {
         var foundTags = await _booru.TagListAsync(tag.Split('_').First() + "%");
@@ -72,7 +65,7 @@ public class LegacyBooruClient : IBooruClient
             .Select(t => new Tag(t.Name, t.Count, t.Name));
     }
 
-    public async Task<Art> GetRandomImageAsync(bool noVideo = true, bool allowNsfw = false, params string[] contentTags)
+    public async Task<Art?> GetRandomImageAsync(bool noVideo = true, bool allowNsfw = false, params string[] contentTags)
     {
         var tags = contentTags.ToList();
 

@@ -50,13 +50,15 @@ public class SourceContextCommand(ISauceClient sauceClient) : InteractionModuleB
                 {
                     var firstEmbed = eg.FirstOrDefault();
 
-                    return EndsWithImageExtension(firstEmbed.Image.GetValueOrDefault().Url)
-                        ? firstEmbed.Image.GetValueOrDefault().Url
-                        : EndsWithImageExtension(firstEmbed.Url)
-                            ? firstEmbed.Url
-                            : EndsWithImageExtension(firstEmbed.Thumbnail?.Url)
-                                ? firstEmbed.Thumbnail?.Url
-                                : null;
+                    return firstEmbed is null
+                        ? null
+                        : EndsWithImageExtension(firstEmbed.Image.GetValueOrDefault().Url)
+                            ? firstEmbed.Image.GetValueOrDefault().Url
+                            : EndsWithImageExtension(firstEmbed.Url)
+                                ? firstEmbed.Url
+                                : EndsWithImageExtension(firstEmbed.Thumbnail?.Url)
+                                    ? firstEmbed.Thumbnail?.Url
+                                    : null;
                 }),
             .. message.Attachments.Where(a => EndsWithImageExtension(a.Url))
                                   .Select(a => a.Url),
@@ -64,7 +66,7 @@ public class SourceContextCommand(ISauceClient sauceClient) : InteractionModuleB
         return imageUrls;
     }
 
-    public static bool EndsWithImageExtension(string url)
+    public static bool EndsWithImageExtension(string? url)
     {
         if (url is null)
         {

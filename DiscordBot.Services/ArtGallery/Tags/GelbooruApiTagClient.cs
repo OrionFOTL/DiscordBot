@@ -28,9 +28,10 @@ public class GelbooruApiTagClient(
                 .CreateClient()
                 .GetFromJsonAsync<TagResponse>(requestUri, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-            return tagResponse.Tags?
+            return tagResponse?
+                .Tags?
                 .Where(t => t.Count > 0)
-                .Select(t => new Tag(t.Name, t.Count)) ?? Array.Empty<Tag>();
+                .Select(t => new Tag(t.Name, t.Count)) ?? Enumerable.Empty<Tag>();
         }
         catch (Exception e)
         {
