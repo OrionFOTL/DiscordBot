@@ -15,7 +15,7 @@ public interface IDailyStatsChartProvider
 
 internal class DailyStatsChartProvider : IDailyStatsChartProvider
 {
-    private SolidColorPaint BlackOpenSansPaint => new(SKColors.Black) { SKTypeface = SKTypeface.FromFamilyName("Open Sans") };
+    private static SolidColorPaint BlackOpenSansPaint => new(SKColors.Black) { SKTypeface = SKTypeface.FromFamilyName("Open Sans") };
 
     public Stream GetDailyActivityChart(IReadOnlyList<TopAuthor> ranking)
     {
@@ -62,7 +62,7 @@ internal class DailyStatsChartProvider : IDailyStatsChartProvider
         return barChart.GetImage().Encode().AsStream();
     }
 
-    private IEnumerable<ColumnSeries<TValue>> GetColumnSeries<TValue>(IEnumerable<TValue> values)
+    private IEnumerable<ColumnSeries<TValue?>> GetColumnSeries<TValue>(IEnumerable<TValue?> values)
     {
         var valuesEnumerator = values.GetEnumerator();
         var fillEnumerator = GetColumnFill().GetEnumerator();
@@ -84,13 +84,13 @@ internal class DailyStatsChartProvider : IDailyStatsChartProvider
             i++;
         }
 
-        var restOfValues = new List<TValue>();
+        var restOfValues = Enumerable.Repeat(default(TValue), i).ToList();
         while (valuesEnumerator.MoveNext())
         {
             restOfValues.Add(valuesEnumerator.Current);
         }
 
-        yield return MakeColumnSeries(restOfValues, null);
+        yield return MakeColumnSeries(restOfValues, new SolidColorPaint(SKColors.CornflowerBlue));
     }
 
     private static IEnumerable<SKColor> GetColumnFill()
@@ -100,16 +100,16 @@ internal class DailyStatsChartProvider : IDailyStatsChartProvider
         yield return SKColors.Brown;
     }
 
-    private ColumnSeries<TValue> MakeColumnSeries<TValue>(IEnumerable<TValue> values, SolidColorPaint? fill)
+    private static ColumnSeries<TValue?> MakeColumnSeries<TValue>(IEnumerable<TValue?> values, SolidColorPaint? fill)
     {
-        return new ColumnSeries<TValue>()
+        return new ColumnSeries<TValue?>()
         {
             Values = values,
             Fill = fill,
             DataLabelsPaint = BlackOpenSansPaint,
             DataLabelsPosition = LiveChartsCore.Measure.DataLabelsPosition.End,
             MaxBarWidth = double.MaxValue,
-            Padding = 20,
+            Padding = 10,
             IgnoresBarPosition = true,
         };
     }
