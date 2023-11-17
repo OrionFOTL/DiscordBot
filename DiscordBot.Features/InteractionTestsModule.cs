@@ -2,7 +2,7 @@
 using Discord.Interactions;
 using Discord.WebSocket;
 
-namespace DiscordBot.Commands;
+namespace DiscordBot.Features;
 
 #if !DEBUG
 [DontAutoRegister]

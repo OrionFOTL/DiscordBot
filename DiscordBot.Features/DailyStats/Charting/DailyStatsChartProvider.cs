@@ -8,9 +8,14 @@ using SkiaSharp;
 
 namespace DiscordBot.Features.DailyStats.Charting;
 
-public class DailyStatsChartProvider : IDailyStatsChartProvider
+public interface IDailyStatsChartProvider
 {
-    public Stream GetDailyActivityChart(IReadOnlyList<KeyValuePair<string, int>> ranking)
+    Stream GetDailyActivityChart(IReadOnlyList<TopAuthor> ranking);
+}
+
+internal class DailyStatsChartProvider : IDailyStatsChartProvider
+{
+    public Stream GetDailyActivityChart(IReadOnlyList<TopAuthor> ranking)
     {
         var barChart = new SKCartesianChart()
         {
@@ -24,53 +29,12 @@ public class DailyStatsChartProvider : IDailyStatsChartProvider
                 TextSize = 20,
                 Paint = new SolidColorPaint(SKColors.Black),
             },
-            Series =
-            [
-                new ColumnSeries<int>()
-                {
-                    Values = ranking.Select(x => x.Value).Take(1).ToList(),
-                    Fill = new SolidColorPaint(SKColors.Gold),
-                    DataLabelsPaint = new SolidColorPaint(SKColors.Gray),
-                    DataLabelsPosition = LiveChartsCore.Measure.DataLabelsPosition.End,
-                    MaxBarWidth = double.MaxValue,
-                    Padding = 20,
-                    IgnoresBarPosition = true,
-                },
-                new ColumnSeries<int>()
-                {
-                    Values = [0, .. ranking.Select(x => x.Value).Skip(1).Take(1)],
-                    Fill = new SolidColorPaint(SKColors.Silver),
-                    DataLabelsPaint = new SolidColorPaint(SKColors.Gray),
-                    DataLabelsPosition = LiveChartsCore.Measure.DataLabelsPosition.End,
-                    MaxBarWidth = double.MaxValue,
-                    Padding = 20,
-                    IgnoresBarPosition = true,
-                },
-                new ColumnSeries<int>()
-                {
-                    Values = [0, 0, .. ranking.Select(x => x.Value).Skip(2).Take(1)],
-                    Fill = new SolidColorPaint(SKColors.Brown),
-                    DataLabelsPaint = new SolidColorPaint(SKColors.Gray),
-                    DataLabelsPosition = LiveChartsCore.Measure.DataLabelsPosition.End,
-                    MaxBarWidth = double.MaxValue,
-                    Padding = 20,
-                    IgnoresBarPosition = true,
-                },
-                new ColumnSeries<int>()
-                {
-                    Values = [0, 0, 0, .. ranking.Select(x => x.Value).Skip(3)],
-                    DataLabelsPaint = new SolidColorPaint(SKColors.Gray),
-                    DataLabelsPosition = LiveChartsCore.Measure.DataLabelsPosition.End,
-                    MaxBarWidth = double.MaxValue,
-                    Padding = 20,
-                    IgnoresBarPosition = true,
-                },
-            ],
+            Series = GetColumnSeries(ranking.Select(ta => ta.MessageCount)).ToList(),
             XAxes =
             [
                 new Axis
                 {
-                    Labels = ranking.Select(x => Ellipsize(x.Key, 20)).ToList(),
+                    Labels = ranking.Select(ta => Ellipsize(ta.Author.ToString(), 20)).ToList(),
                     LabelsRotation = -20,
                     Padding = new() { Top = 5 },
                     TicksPaint = new SolidColorPaint(new SKColor(35, 35, 35)),
@@ -92,6 +56,58 @@ public class DailyStatsChartProvider : IDailyStatsChartProvider
         };
 
         return barChart.GetImage().Encode().AsStream();
+    }
+
+    private static IEnumerable<ColumnSeries<TValue>> GetColumnSeries<TValue>(IEnumerable<TValue> values)
+    {
+        var valuesEnumerator = values.GetEnumerator();
+        var fillEnumerator = GetColumnFill().GetEnumerator();
+
+        int i = 0;
+        while (fillEnumerator.MoveNext())
+        {
+            if (valuesEnumerator.MoveNext())
+            {
+                yield return MakeColumnSeries(
+                    [.. Enumerable.Repeat(default(TValue), i), valuesEnumerator.Current],
+                    new SolidColorPaint(fillEnumerator.Current));
+            }
+            else
+            {
+                yield break;
+            }
+
+            i++;
+        }
+
+        var restOfValues = new List<TValue>();
+        while (valuesEnumerator.MoveNext())
+        {
+            restOfValues.Add(valuesEnumerator.Current);
+        }
+
+        yield return MakeColumnSeries(restOfValues, null);
+    }
+
+    private static IEnumerable<SKColor> GetColumnFill()
+    {
+        yield return SKColors.Gold;
+        yield return SKColors.Silver;
+        yield return SKColors.Brown;
+    }
+
+    private static ColumnSeries<TValue> MakeColumnSeries<TValue>(IEnumerable<TValue> values, SolidColorPaint? fill)
+    {
+        return new ColumnSeries<TValue>()
+        {
+            Values = values,
+            Fill = fill,
+            DataLabelsPaint = new SolidColorPaint(SKColors.Gray),
+            DataLabelsPosition = LiveChartsCore.Measure.DataLabelsPosition.End,
+            MaxBarWidth = double.MaxValue,
+            Padding = 20,
+            IgnoresBarPosition = true,
+        };
     }
 
     private static string Ellipsize(string text, int maxLength)

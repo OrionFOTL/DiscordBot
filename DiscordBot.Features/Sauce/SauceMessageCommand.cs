@@ -2,7 +2,7 @@
 using Discord.Commands;
 using DiscordBot.Services.ArtGallery.Source;
 
-namespace DiscordBot.Commands.Sauce;
+namespace DiscordBot.Features.Sauce;
 
 public class SauceMessageCommand(ISauceClient sauceClient) : ModuleBase<SocketCommandContext>
 {

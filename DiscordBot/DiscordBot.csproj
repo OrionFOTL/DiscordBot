@@ -26,6 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\DiscordBot.Common\DiscordBot.Common.csproj" />
     <ProjectReference Include="..\DiscordBot.Features\DiscordBot.Features.csproj" />
     <ProjectReference Include="..\DiscordBot.Services\DiscordBot.Services.csproj" />
   </ItemGroup>

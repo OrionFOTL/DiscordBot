@@ -1,11 +1,11 @@
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
-using DiscordBot.Commands.Sauce;
+using DiscordBot.Features.Sauce;
 using DiscordBot.Services.ArtGallery.Images;
 using DiscordBot.Services.ArtGallery.Source;
 
-namespace DiscordBot.Commands.BooruGallery;
+namespace DiscordBot.Features.BooruGallery;
 
 public class GelbooruInteractionModule(
     IBooruClient booruClient,

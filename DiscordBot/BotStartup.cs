@@ -1,8 +1,8 @@
 ﻿using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
-using DiscordBot.Commands;
 using DiscordBot.Extensions;
+using DiscordBot.Features;
 using Microsoft.Extensions.Options;
 
 namespace DiscordBot;
@@ -23,7 +23,6 @@ internal class BotStartup(
         discordClient.Log += Log;
         discordClient.Ready += RegisterSlashCommandsToGuilds;
         discordClient.InteractionCreated += HandleInteraction;
-
         interactionService.Log += Log;
 
         using (var serviceScope = serviceProvider.CreateScope())

@@ -1,17 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace DiscordBot.Features.DailyStats;
+namespace DiscordBot.Features.DailyStats.Config;
 
-public class DailyStatsConfig
-{
-    [Required]
-    public required string Cron { get; init; }
-
-    [Required]
-    public required Server[] Servers { get; init; }
-}
-
-public class Server
+public record DailyStatsServer
 {
     [Required]
     public ulong Id { get; init; }

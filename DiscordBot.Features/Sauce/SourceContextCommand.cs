@@ -3,7 +3,7 @@ using Discord.Interactions;
 using Discord.WebSocket;
 using DiscordBot.Services.ArtGallery.Source;
 
-namespace DiscordBot.Commands.Sauce;
+namespace DiscordBot.Features.Sauce;
 
 public class SourceContextCommand(ISauceClient sauceClient) : InteractionModuleBase<SocketInteractionContext>
 {

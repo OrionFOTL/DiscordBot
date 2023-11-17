@@ -1,8 +1,10 @@
-﻿namespace DiscordBot.Extensions;
+﻿using Microsoft.Extensions.DependencyInjection;
 
-internal static class ServiceCollectionOptionsExtensions
+namespace DiscordBot.Common;
+
+public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddAndValidateOptions<TOptions>(this IServiceCollection services, string configurationSection = null)
+    public static IServiceCollection AddAndValidateOptions<TOptions>(this IServiceCollection services, string? configurationSection = null)
         where TOptions : class
     {
         return services

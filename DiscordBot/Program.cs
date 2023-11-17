@@ -1,9 +1,9 @@
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
-using DiscordBot.Extensions;
-using DiscordBot.Features.DailyStats;
-using DiscordBot.Features.DailyStats.Charting;
+using DiscordBot.Common;
+using DiscordBot.Features.DailyStats.Job;
+using DiscordBot.Features.DailyStats.ServiceCollectionExtension;
 using DiscordBot.Services.ArtGallery.Images;
 using DiscordBot.Services.ArtGallery.Source;
 using DiscordBot.Services.ArtGallery.Tags;
@@ -44,7 +44,6 @@ internal static class Program
                 services.AddHostedService<BotStartup>()
                         .AddAndValidateOptions<BotConfig>()
                         .AddAndValidateOptions<SaucenaoConfig>()
-                        .AddAndValidateOptions<DailyStatsConfig>("DailyStats")
                         .AddAndValidateOptions<QuartzOptions>("Quartz")
                         .AddBotServices(builder.Configuration);
             });
@@ -67,12 +66,11 @@ internal static class Program
                 .AddTransient<IBooruClient, NewGelbooruClient>()
                 .AddTransient<ISauceClient, SauceClient>()
                 .AddTransient<ITagClient, GelbooruWebTagClient>()
-                .AddTransient<IDailyStatsChartProvider, DailyStatsChartProvider>()
-                .AddQuartz(o => 
+                .AddDailyStatsServices()
+                .AddQuartz(o =>
                     o.ScheduleJob<DailyStatsJob>(trigger => trigger
                         .WithIdentity(nameof(DailyStatsJob))
-                        .StartNow()
-                        .WithCronSchedule(configuration["DailyStats:Cron"])))
+                        .WithCronSchedule(configuration["DailyStatsJobConfig:Cron"] ?? throw new Exception("DailyStatsJobConfig:Cron was null or not found"))))
                 .AddQuartzHostedService();
 
         return services;

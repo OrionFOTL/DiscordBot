@@ -3,7 +3,7 @@ using Discord.Interactions;
 using DiscordBot.Services.ArtGallery.Tags;
 using Microsoft.Extensions.Logging;
 
-namespace DiscordBot.Commands.BooruGallery;
+namespace DiscordBot.Features.BooruGallery;
 
 public class TagAutocompleteHandler(ILogger<TagAutocompleteHandler> logger, ITagClient tagClient) : AutocompleteHandler
 {
