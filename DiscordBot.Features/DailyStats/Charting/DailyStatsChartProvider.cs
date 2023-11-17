@@ -15,6 +15,8 @@ public interface IDailyStatsChartProvider
 
 internal class DailyStatsChartProvider : IDailyStatsChartProvider
 {
+    private SolidColorPaint BlackOpenSansPaint => new(SKColors.Black) { SKTypeface = SKTypeface.FromFamilyName("Open Sans") };
+
     public Stream GetDailyActivityChart(IReadOnlyList<TopAuthor> ranking)
     {
         var barChart = new SKCartesianChart()
@@ -27,7 +29,7 @@ internal class DailyStatsChartProvider : IDailyStatsChartProvider
                 VerticalAlignment = Align.Start,
                 Padding = new() { Top = 10 },
                 TextSize = 20,
-                Paint = new SolidColorPaint(SKColors.Black),
+                Paint = BlackOpenSansPaint,
             },
             Series = GetColumnSeries(ranking.Select(ta => ta.MessageCount)).ToList(),
             XAxes =
@@ -36,6 +38,7 @@ internal class DailyStatsChartProvider : IDailyStatsChartProvider
                 {
                     Labels = ranking.Select(ta => Ellipsize(ta.Author.ToString(), 20)).ToList(),
                     LabelsRotation = -20,
+                    LabelsPaint = BlackOpenSansPaint,
                     Padding = new() { Top = 5 },
                     TicksPaint = new SolidColorPaint(new SKColor(35, 35, 35)),
                     TicksAtCenter = true,
@@ -47,6 +50,7 @@ internal class DailyStatsChartProvider : IDailyStatsChartProvider
             [
                 new Axis
                 {
+                    LabelsPaint = BlackOpenSansPaint,
                     MinLimit = 0,
                     SubseparatorsCount = 9,
                     SubseparatorsPaint = new SolidColorPaint(SKColors.LightGray) { PathEffect = new DashEffect([7, 3]) },
@@ -58,7 +62,7 @@ internal class DailyStatsChartProvider : IDailyStatsChartProvider
         return barChart.GetImage().Encode().AsStream();
     }
 
-    private static IEnumerable<ColumnSeries<TValue>> GetColumnSeries<TValue>(IEnumerable<TValue> values)
+    private IEnumerable<ColumnSeries<TValue>> GetColumnSeries<TValue>(IEnumerable<TValue> values)
     {
         var valuesEnumerator = values.GetEnumerator();
         var fillEnumerator = GetColumnFill().GetEnumerator();
@@ -96,13 +100,13 @@ internal class DailyStatsChartProvider : IDailyStatsChartProvider
         yield return SKColors.Brown;
     }
 
-    private static ColumnSeries<TValue> MakeColumnSeries<TValue>(IEnumerable<TValue> values, SolidColorPaint? fill)
+    private ColumnSeries<TValue> MakeColumnSeries<TValue>(IEnumerable<TValue> values, SolidColorPaint? fill)
     {
         return new ColumnSeries<TValue>()
         {
             Values = values,
             Fill = fill,
-            DataLabelsPaint = new SolidColorPaint(SKColors.Gray),
+            DataLabelsPaint = BlackOpenSansPaint,
             DataLabelsPosition = LiveChartsCore.Measure.DataLabelsPosition.End,
             MaxBarWidth = double.MaxValue,
             Padding = 20,
