@@ -1,5 +1,4 @@
-﻿using Discord;
-using Discord.Interactions;
+﻿using Discord.Interactions;
 using DiscordBot.Features.DailyStats.Config;
 using Microsoft.Extensions.Options;
 
