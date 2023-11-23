@@ -25,6 +25,11 @@ internal class RecentMessagesFetcher(ILogger<RecentMessagesFetcher> logger) : IR
         {
             await foreach (var messageBatch in channel.GetMessagesAsync(lastMessage, Direction.Before, 100))
             {
+                if (messageBatch.Count == 0)
+                {
+                    yield break;
+                }
+
                 foreach (var message in messageBatch)
                 {
                     if (message.CreatedAt < oldestDate)
