@@ -25,10 +25,7 @@ internal class BotStartup(
         discordClient.InteractionCreated += HandleInteraction;
         interactionService.Log += Log;
 
-        using (var serviceScope = serviceProvider.CreateScope())
-        {
-            await interactionService.AddModulesAsync(typeof(InteractionTestsModule).Assembly, serviceScope.ServiceProvider);
-        }
+        await interactionService.AddModulesAsync(typeof(InteractionTestsModule).Assembly, serviceProvider);
 
         await discordClient.LoginAsync(TokenType.Bot, _discordBotToken);
         await discordClient.StartAsync();
