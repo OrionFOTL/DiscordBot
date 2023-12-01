@@ -3,6 +3,7 @@ using Discord.Interactions;
 using Discord.WebSocket;
 using DiscordBot.Features.DailyStats.Job;
 using DiscordBot.Features.DailyStats.ServiceCollectionExtension;
+using DiscordBot.Features.Fishing.SetupExtensions;
 using DiscordBot.Services.ArtGallery.Images;
 using DiscordBot.Services.ArtGallery.Source;
 using DiscordBot.Services.ArtGallery.Tags;
@@ -32,6 +33,7 @@ internal static class ServiceCollectionExtensions
                 .AddTransient<ISauceClient, SauceClient>()
                 .AddTransient<ITagClient, GelbooruWebTagClient>()
                 .AddDailyStatsServices()
+                .AddFishingGameServices(configuration)
                 .AddQuartz(o =>
                     o.ScheduleJob<DailyStatsJob>(trigger => trigger
                         .WithIdentity(nameof(DailyStatsJob))

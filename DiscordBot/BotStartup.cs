@@ -3,6 +3,7 @@ using Discord.Interactions;
 using Discord.WebSocket;
 using DiscordBot.Extensions;
 using DiscordBot.Features;
+using DiscordBot.Features.Fishing.SetupExtensions;
 using Microsoft.Extensions.Options;
 
 namespace DiscordBot;
@@ -25,9 +26,10 @@ internal class BotStartup(
         discordClient.InteractionCreated += HandleInteraction;
         interactionService.Log += Log;
 
-        using (var serviceScope = serviceProvider.CreateScope())
+        using (var scope = serviceProvider.CreateScope())
         {
-            await interactionService.AddModulesAsync(typeof(InteractionTestsModule).Assembly, serviceScope.ServiceProvider);
+            await interactionService.AddModulesAsync(typeof(InteractionTestsModule).Assembly, scope.ServiceProvider);
+            await interactionService.AddFishingGameInteractionModules(scope.ServiceProvider);
         }
 
         await discordClient.LoginAsync(TokenType.Bot, _discordBotToken);
