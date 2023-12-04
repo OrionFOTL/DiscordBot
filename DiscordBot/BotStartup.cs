@@ -41,7 +41,8 @@ internal class BotStartup(
     private Task Log(LogMessage log)
     {
         using var scope = logger.BeginScope(log);
-        logger.Log(log.Severity.ToLogLevel(), "{message}", log);
+
+        logger.Log(log.Severity.ToLogLevel(), log.Exception, "{message}", log.Message);
         return Task.CompletedTask;
     }
 

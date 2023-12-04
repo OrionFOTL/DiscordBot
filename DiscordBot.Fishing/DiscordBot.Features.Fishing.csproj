@@ -6,6 +6,7 @@
 		<Nullable>enable</Nullable>
 		<DebugType>embedded</DebugType>
 		<EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
+		<NeutralLanguage>en</NeutralLanguage>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -16,6 +17,21 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\DiscordBot.Common\DiscordBot.Common.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Compile Update="FishingResources.Designer.cs">
+	    <DesignTime>True</DesignTime>
+	    <AutoGen>True</AutoGen>
+	    <DependentUpon>FishingResources.resx</DependentUpon>
+	  </Compile>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <EmbeddedResource Update="FishingResources.resx">
+	    <Generator>ResXFileCodeGenerator</Generator>
+	    <LastGenOutput>FishingResources.Designer.cs</LastGenOutput>
+	  </EmbeddedResource>
 	</ItemGroup>
 
 </Project>

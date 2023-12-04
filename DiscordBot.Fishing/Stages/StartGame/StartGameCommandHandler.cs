@@ -9,6 +9,7 @@ internal class StartGameCommandHandler(
     IStateHandlerFactory stateHandlerFactory) : InteractionHandler(databaseContext, stateHandlerFactory)
 {
     [SlashCommand("fishing_game", "Play a fishing game!")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Won't be detected as a command otherwise")]
     public Task ShowGame()
     {
         return Task.CompletedTask;

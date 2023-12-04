@@ -7,20 +7,20 @@ namespace DiscordBot.Features.Fishing.Database;
 
 internal class GameState
 {
-    [NotMapped]
-    public StateMachine<StateEnum, Trigger> StateMachine { get; }
+    public int Id { get; init; }
 
     public StateEnum State { get; private set; }
 
-    public int Id { get; init; }
+    public string? Message { get; set; }
 
     public int PlayerId { get; set; }
 
     public required Player Player { get; init; }
 
-    public string? Message { get; set; }
+    public Location? Location { get; set; }
 
-    public string? CurrentLocationCode { get; set; }
+    [NotMapped]
+    public StateMachine<StateEnum, Trigger> StateMachine { get; }
 
     public GameState(StateEnum state)
     {
@@ -33,14 +33,14 @@ internal class GameState
         var stateMachine = new StateMachine<StateEnum, Trigger>(() => State, state => State = state);
 
         stateMachine.Configure(StateEnum.MainMenu)
-            .Permit(Trigger.GoFishing, StateEnum.LocationSelection);
+            .Permit(Trigger.GoToLocationSelect, StateEnum.LocationSelection);
 
         stateMachine.Configure(StateEnum.LocationSelection)
-            .PermitIf(Trigger.LocationSelected, StateEnum.OnLocation, () => CurrentLocationCode is not null, $"{nameof(CurrentLocationCode)} not null");
+            .PermitIf(Trigger.LocationSelected, StateEnum.OnLocation, () => Location is not null, $"{nameof(Location)} not null");
 
         stateMachine.Configure(StateEnum.OnLocation)
-            .Permit(Trigger.BackToLocationSelect, StateEnum.LocationSelection)
-            .Permit(Trigger.BackToMenu, StateEnum.MainMenu)
+            .Permit(Trigger.GoToLocationSelect, StateEnum.LocationSelection)
+            .Permit(Trigger.GoToMenu, StateEnum.MainMenu)
             .Permit(Trigger.ViewEquipment, StateEnum.EquipmentView)
             .Permit(Trigger.ViewFishAtLocation, StateEnum.FishListAtLocation)
             .Permit(Trigger.ThrowLine, StateEnum.FishingInProgress);

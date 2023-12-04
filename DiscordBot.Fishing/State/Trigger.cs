@@ -2,11 +2,11 @@
 
 enum Trigger
 {
-    GoFishing,
+    GoToMenu,
+    GoToLocationSelect,
     LocationSelected,
     CastLine,
     FishCaught,
-    ReturnToMenu,
     ViewEquipment,
     EquipmentTypeSelected,
     SpecificEquipmentSelected,
@@ -15,6 +15,4 @@ enum Trigger
     GoBack,
     ThrowLine,
     FishingCompleted,
-    BackToLocationSelect,
-    BackToMenu,
 }

@@ -10,26 +10,17 @@ internal class OnLocationInteractionHandler(
     DatabaseContext databaseContext,
     IStateHandlerFactory stateHandlerFactory) : InteractionHandler(databaseContext, stateHandlerFactory)
 {
-    [ComponentInteraction("back-to-locations")]
-    public Task BackToLocationSelect()
+    [ComponentInteraction($"{nameof(Trigger.LocationSelected)}-*")]
+    public Task LocationSelected(string locationCode)
     {
         InvalidOperationExceptionExtensions.ThrowIfNull(GameState);
 
-        GameState.Message = $"After choosing {GameState.CurrentLocationCode}, you went back to location select!";
+        var selectedLocation = DatabaseContext.Locations.FirstOrDefault(l => l.Code == locationCode)
+            ?? throw new InvalidOperationException($"No location with code {locationCode} found");
 
-        Fire(Trigger.BackToLocationSelect);
+        GameState.Location = selectedLocation;
 
-        return Task.CompletedTask;
-    }
-
-    [ComponentInteraction("back-to-menu")]
-    public Task BackToMenu()
-    {
-        InvalidOperationExceptionExtensions.ThrowIfNull(GameState);
-
-        GameState.Message = $"After choosing {GameState.CurrentLocationCode}, you went back to menu!";
-
-        Fire(Trigger.BackToMenu);
+        Fire(Trigger.LocationSelected);
 
         return Task.CompletedTask;
     }

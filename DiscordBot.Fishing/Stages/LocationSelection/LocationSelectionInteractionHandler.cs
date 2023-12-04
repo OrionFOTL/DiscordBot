@@ -10,20 +10,12 @@ internal class LocationSelectionInteractionHandler(
     DatabaseContext databaseContext,
     IStateHandlerFactory stateHandlerFactory) : InteractionHandler(databaseContext, stateHandlerFactory)
 {
-    [ComponentInteraction("location-*")]
-    public Task LocationSelected(string locationCode)
+    [ComponentInteraction(nameof(Trigger.GoToLocationSelect))]
+    public Task GoToLocationSelect()
     {
         InvalidOperationExceptionExtensions.ThrowIfNull(GameState);
 
-        if (locationCode is not "jp")
-        {
-            throw new InvalidOperationException();
-        }
-
-        GameState.CurrentLocationCode = locationCode;
-        GameState.Message = $"{locationCode} chosen!";
-
-        Fire(Trigger.LocationSelected);
+        Fire(Trigger.GoToLocationSelect);
 
         return Task.CompletedTask;
     }

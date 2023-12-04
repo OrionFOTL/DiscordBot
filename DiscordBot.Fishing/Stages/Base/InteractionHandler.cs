@@ -2,6 +2,7 @@ using Discord;
 using Discord.Interactions;
 using DiscordBot.Common;
 using DiscordBot.Features.Fishing.Database;
+using DiscordBot.Features.Fishing.Exceptions;
 using DiscordBot.Features.Fishing.State;
 using DiscordBot.Fishing.State;
 using Microsoft.EntityFrameworkCore;
@@ -28,13 +29,15 @@ internal abstract class InteractionHandler(
 
             if (invokingUser.Id != originalInvoker.Id)
             {
-                throw new InvalidOperationException("You can't press other ppl's buttons");
+                await Context.Interaction.FollowupAsync(
+                    $"{MentionUtils.MentionUser(invokingUser.Id)} You can't press other people's buttons. To play your own game, type `/fishing-game`", ephemeral: true);
+                throw new InteractionCancelledException("Invoking user is not original player");
             }
 
             invokingUser = originalInvoker;
         }
 
-        var gameState = await DatabaseContext.GameStates.FirstOrDefaultAsync(gs => gs.Player.DiscordId == invokingUser.Id)
+        var gameState = await DatabaseContext.GameStates.Include(s => s.Player).FirstOrDefaultAsync(gs => gs.Player.DiscordId == invokingUser.Id)
                      ?? await RegisterPlayer(invokingUser);
 
         GameState = gameState;
@@ -56,8 +59,7 @@ internal abstract class InteractionHandler(
 
         if (!GameState.StateMachine.CanFire(trigger, out var unmetGuards))
         {
-            // exit somehow
-            throw new InvalidOperationException($"Unable to fire {trigger}");
+            throw new InvalidOperationException($"Unable to fire {trigger}; unmet guards: [{string.Join(',', unmetGuards)}]");
         }
 
         GameState.StateMachine.Fire(trigger);
