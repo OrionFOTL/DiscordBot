@@ -6,9 +6,9 @@ using DiscordBot.Features.Fishing.State;
 
 namespace DiscordBot.Features.Fishing.Stages.OnLocation;
 
-internal class OnLocationInteractionHandler(
+internal class OnLocationInteractionReceiver(
     DatabaseContext databaseContext,
-    IStateHandlerFactory stateHandlerFactory) : InteractionHandler(databaseContext, stateHandlerFactory)
+    IStateHandlerFactory stateHandlerFactory) : InteractionReceiver(databaseContext, stateHandlerFactory)
 {
     [ComponentInteraction($"{nameof(Trigger.LocationSelected)}-*")]
     public Task LocationSelected(string locationCode)

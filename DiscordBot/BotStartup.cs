@@ -19,6 +19,8 @@ internal class BotStartup(
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        FishingGameDatabaseInitialiser.InitialiseDatabase(serviceProvider);
+
         logger.LogInformation("Starting discord bot");
 
         discordClient.Log += Log;

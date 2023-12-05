@@ -6,7 +6,7 @@ namespace DiscordBot.Features.Fishing.Stages.StartGame;
 
 internal class StartGameCommandHandler(
     DatabaseContext databaseContext,
-    IStateHandlerFactory stateHandlerFactory) : InteractionHandler(databaseContext, stateHandlerFactory)
+    IStateHandlerFactory stateHandlerFactory) : InteractionReceiver(databaseContext, stateHandlerFactory)
 {
     [SlashCommand("fishing_game", "Play a fishing game!")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Won't be detected as a command otherwise")]

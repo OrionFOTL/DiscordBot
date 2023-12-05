@@ -33,7 +33,8 @@ internal class GameState
         var stateMachine = new StateMachine<StateEnum, Trigger>(() => State, state => State = state);
 
         stateMachine.Configure(StateEnum.MainMenu)
-            .Permit(Trigger.GoToLocationSelect, StateEnum.LocationSelection);
+            .Permit(Trigger.GoToLocationSelect, StateEnum.LocationSelection)
+            .Permit(Trigger.ViewEquipment, StateEnum.EquipmentView);
 
         stateMachine.Configure(StateEnum.LocationSelection)
             .PermitIf(Trigger.LocationSelected, StateEnum.OnLocation, () => Location is not null, $"{nameof(Location)} not null");
@@ -46,6 +47,7 @@ internal class GameState
             .Permit(Trigger.ThrowLine, StateEnum.FishingInProgress);
 
         stateMachine.Configure(StateEnum.EquipmentView)
+            .Permit(Trigger.GoToMenu, StateEnum.MainMenu)
             .Permit(Trigger.EquipmentTypeSelected, StateEnum.SpecificEquipmentSelection)
             .Permit(Trigger.EquipmentConfirmed, StateEnum.OnLocation);
 

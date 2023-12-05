@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DiscordBot.Features.Fishing.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20231203222011_SavedImage")]
-    partial class SavedImage
+    [Migration("20231205193520_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -117,6 +117,83 @@ namespace DiscordBot.Features.Fishing.Migrations
                     b.ToTable("SavedImages");
                 });
 
+            modelBuilder.Entity("DiscordBot.Features.Fishing.Entities.Equipment.Item", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<double>("Price")
+                        .HasColumnType("REAL");
+
+                    b.HasKey("Id");
+
+                    b.ToTable((string)null);
+
+                    b.UseTpcMappingStrategy();
+                });
+
+            modelBuilder.Entity("DiscordBot.Features.Fishing.Entities.Equipment.OwnedItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("Equipped")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("ItemId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("PlayerId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ItemId");
+
+                    b.HasIndex("PlayerId");
+
+                    b.ToTable((string)null);
+
+                    b.UseTpcMappingStrategy();
+                });
+
+            modelBuilder.Entity("DiscordBot.Features.Fishing.Entities.Equipment.Bait", b =>
+                {
+                    b.HasBaseType("DiscordBot.Features.Fishing.Entities.Equipment.Item");
+
+                    b.ToTable("Bait");
+                });
+
+            modelBuilder.Entity("DiscordBot.Features.Fishing.Entities.Equipment.FishingRod", b =>
+                {
+                    b.HasBaseType("DiscordBot.Features.Fishing.Entities.Equipment.Item");
+
+                    b.ToTable("FishingRod");
+                });
+
+            modelBuilder.Entity("DiscordBot.Features.Fishing.Entities.Equipment.OwnedBait", b =>
+                {
+                    b.HasBaseType("DiscordBot.Features.Fishing.Entities.Equipment.OwnedItem");
+
+                    b.Property<int>("Amount")
+                        .HasColumnType("INTEGER");
+
+                    b.ToTable("OwnedBait");
+                });
+
+            modelBuilder.Entity("DiscordBot.Features.Fishing.Entities.Equipment.OwnedFishingRod", b =>
+                {
+                    b.HasBaseType("DiscordBot.Features.Fishing.Entities.Equipment.OwnedItem");
+
+                    b.ToTable("OwnedFishingRod");
+                });
+
             modelBuilder.Entity("DiscordBot.Features.Fishing.Database.GameState", b =>
                 {
                     b.HasOne("DiscordBot.Features.Fishing.Database.Location", "Location")
@@ -134,9 +211,30 @@ namespace DiscordBot.Features.Fishing.Migrations
                     b.Navigation("Player");
                 });
 
+            modelBuilder.Entity("DiscordBot.Features.Fishing.Entities.Equipment.OwnedItem", b =>
+                {
+                    b.HasOne("DiscordBot.Features.Fishing.Entities.Equipment.Item", "Item")
+                        .WithMany()
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DiscordBot.Features.Fishing.Database.Player", "Player")
+                        .WithMany("OwnedItems")
+                        .HasForeignKey("PlayerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Item");
+
+                    b.Navigation("Player");
+                });
+
             modelBuilder.Entity("DiscordBot.Features.Fishing.Database.Player", b =>
                 {
                     b.Navigation("GameState");
+
+                    b.Navigation("OwnedItems");
                 });
 #pragma warning restore 612, 618
         }

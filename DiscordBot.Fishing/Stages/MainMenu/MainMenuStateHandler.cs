@@ -28,6 +28,7 @@ internal class MainMenuStateHandler(IStaticImageFetcher staticImageFetcher, IEmb
             }.Build();
             mp.Components = new ComponentBuilder()
                 .WithButton("Go Fishing", nameof(Trigger.GoToLocationSelect), emote: new Emoji("🎣"))
+                .WithButton("View your equipment", nameof(Trigger.ViewEquipment), ButtonStyle.Secondary, new Emoji("🛠️"))
                 .Build();
         });
     }

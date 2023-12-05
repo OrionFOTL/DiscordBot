@@ -15,7 +15,7 @@ internal class OnLocationStateHandler(DatabaseContext databaseContext, IEmbedFor
     {
         await databaseContext.Entry(gameState).Reference(g => g.Location).LoadAsync();
 
-        InvalidOperationExceptionExtensions.ThrowIfNull(gameState.Location, nameof(gameState.Location));
+        InvalidOperationExceptionExtensions.ThrowIfNull(gameState.Location);
 
         var footer = await embedFormatter.GetStandardFooter();
 

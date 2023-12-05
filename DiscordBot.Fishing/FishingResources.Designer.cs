@@ -63,6 +63,26 @@ namespace DiscordBot.Features.Fishing {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
+        internal static byte[] Equipment1 {
+            get {
+                object obj = ResourceManager.GetObject("Equipment1", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] Equipment2 {
+            get {
+                object obj = ResourceManager.GetObject("Equipment2", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
         internal static byte[] GameIcon {
             get {
                 object obj = ResourceManager.GetObject("GameIcon", resourceCulture);

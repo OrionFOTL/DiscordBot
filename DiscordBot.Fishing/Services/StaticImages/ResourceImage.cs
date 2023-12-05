@@ -15,6 +15,8 @@ internal class ResourceImage
 
     public static ResourceImage WelcomeScreen { get { _welcomeScreenEnumerator.MoveNext(); return _welcomeScreenEnumerator.Current; } }
 
+    public static ResourceImage EquipmentScreen { get; } = new(nameof(FishingResources.Equipment1));
+
     private static IEnumerable<ResourceImage> WelcomeScreensRotation()
     {
         ResourceImage resourceImage2 = new(nameof(FishingResources.TitleScreen2));

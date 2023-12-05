@@ -1,4 +1,6 @@
-﻿namespace DiscordBot.Features.Fishing.Database;
+﻿using DiscordBot.Features.Fishing.Entities.Equipment;
+
+namespace DiscordBot.Features.Fishing.Database;
 
 internal class Player
 {
@@ -9,4 +11,6 @@ internal class Player
     public required string DiscordName { get; init; }
 
     public GameState? GameState { get; init; }
+
+    public required ICollection<OwnedItem> OwnedItems { get; set; }
 }

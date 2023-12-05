@@ -3,6 +3,7 @@ using DiscordBot.Features.Fishing.Database;
 using DiscordBot.Features.Fishing.Embeds;
 using DiscordBot.Features.Fishing.Services.StaticImages;
 using DiscordBot.Features.Fishing.Stages.Base;
+using DiscordBot.Features.Fishing.Stages.Equipment;
 using DiscordBot.Features.Fishing.Stages.LocationSelection;
 using DiscordBot.Features.Fishing.Stages.MainMenu;
 using DiscordBot.Features.Fishing.Stages.OnLocation;
@@ -22,9 +23,10 @@ public static class FishingServiceCollectionExtensions
         services.AddTransient<IStaticImageFetcher, StaticImageFetcher>();
         services.AddTransient<IEmbedFormatter, EmbedFormatter>();
 
-        services.AddTransient<IOnLocationStateHandler, OnLocationStateHandler>();
-        services.AddTransient<ILocationSelectionStateHandler, LocationSelectionStateHandler>();
         services.AddTransient<IMainMenuStateHandler, MainMenuStateHandler>();
+        services.AddTransient<IMainEquipmentViewStateHandler, MainEquipmentViewStateHandler>();
+        services.AddTransient<ILocationSelectionStateHandler, LocationSelectionStateHandler>();
+        services.AddTransient<IOnLocationStateHandler, OnLocationStateHandler>();
 
         services.AddDbContext<DatabaseContext>(o => o.UseSqlite(configuration["DbConnectionString"]));
 

@@ -6,9 +6,9 @@ using DiscordBot.Features.Fishing.State;
 
 namespace DiscordBot.Features.Fishing.Stages.MainMenu;
 
-internal class MainMenuInteractionHandler(
+internal class MainMenuInteractionReceiver(
     DatabaseContext databaseContext,
-    IStateHandlerFactory stateHandlerFactory) : InteractionHandler(databaseContext, stateHandlerFactory)
+    IStateHandlerFactory stateHandlerFactory) : InteractionReceiver(databaseContext, stateHandlerFactory)
 {
     [ComponentInteraction(nameof(Trigger.GoToMenu))]
     public Task BackToMenu()

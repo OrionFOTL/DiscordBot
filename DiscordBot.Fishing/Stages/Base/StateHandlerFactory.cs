@@ -1,4 +1,5 @@
-﻿using DiscordBot.Features.Fishing.Stages.LocationSelection;
+﻿using DiscordBot.Features.Fishing.Stages.Equipment;
+using DiscordBot.Features.Fishing.Stages.LocationSelection;
 using DiscordBot.Features.Fishing.Stages.MainMenu;
 using DiscordBot.Features.Fishing.Stages.OnLocation;
 using DiscordBot.Fishing.State;
@@ -20,6 +21,7 @@ internal class StateHandlerFactory(IServiceProvider serviceProvider) : IStateHan
             StateEnum.MainMenu => serviceProvider.GetRequiredService<IMainMenuStateHandler>(),
             StateEnum.LocationSelection => serviceProvider.GetRequiredService<ILocationSelectionStateHandler>(),
             StateEnum.OnLocation => serviceProvider.GetRequiredService<IOnLocationStateHandler>(),
+            StateEnum.EquipmentView => serviceProvider.GetRequiredService<IMainEquipmentViewStateHandler>(),
         };
     }
 }
