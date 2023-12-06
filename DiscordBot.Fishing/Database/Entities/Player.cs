@@ -1,6 +1,6 @@
-﻿using DiscordBot.Features.Fishing.Entities.Equipment;
+﻿using DiscordBot.Features.Fishing.Database.Entities.Equipment;
 
-namespace DiscordBot.Features.Fishing.Database;
+namespace DiscordBot.Features.Fishing.Database.Entities;
 
 internal class Player
 {

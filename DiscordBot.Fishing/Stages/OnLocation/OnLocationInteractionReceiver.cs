@@ -1,6 +1,7 @@
 ﻿using Discord.Interactions;
 using DiscordBot.Common;
 using DiscordBot.Features.Fishing.Database;
+using DiscordBot.Features.Fishing.Database.Entities;
 using DiscordBot.Features.Fishing.Stages.Base;
 using DiscordBot.Features.Fishing.State;
 

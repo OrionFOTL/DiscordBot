@@ -1,5 +1,6 @@
 ﻿using DiscordBot.Common;
 using DiscordBot.Features.Fishing.Database;
+using DiscordBot.Features.Fishing.Database.Repositories;
 using DiscordBot.Features.Fishing.Embeds;
 using DiscordBot.Features.Fishing.Services.StaticImages;
 using DiscordBot.Features.Fishing.Stages.Base;
@@ -11,7 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace DiscordBot.Features.Fishing.SetupExtensions;
+namespace DiscordBot.Features.Fishing.Extensions.SetupExtensions;
 
 public static class FishingServiceCollectionExtensions
 {
@@ -25,10 +26,12 @@ public static class FishingServiceCollectionExtensions
 
         services.AddTransient<IMainMenuStateHandler, MainMenuStateHandler>();
         services.AddTransient<IMainEquipmentViewStateHandler, MainEquipmentViewStateHandler>();
+        services.AddTransient<IEquipmentItemViewStateHandler, EquipmentItemViewStateHandler>();
         services.AddTransient<ILocationSelectionStateHandler, LocationSelectionStateHandler>();
         services.AddTransient<IOnLocationStateHandler, OnLocationStateHandler>();
 
         services.AddDbContext<DatabaseContext>(o => o.UseSqlite(configuration["DbConnectionString"]));
+        services.AddTransient<IPlayerOwnedItemsRepository, PlayerOwnedItemsRepository>();
 
         return services;
     }

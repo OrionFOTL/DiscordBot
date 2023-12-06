@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using DiscordBot.Features.Fishing.Database;
 
-namespace DiscordBot.Features.Fishing.Entities.Equipment;
+namespace DiscordBot.Features.Fishing.Database.Entities.Equipment;
 
 internal abstract class OwnedItem
 {

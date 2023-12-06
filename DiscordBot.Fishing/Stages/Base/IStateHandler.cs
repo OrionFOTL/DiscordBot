@@ -1,5 +1,5 @@
 ﻿using Discord;
-using DiscordBot.Features.Fishing.Database;
+using DiscordBot.Features.Fishing.Database.Entities;
 
 namespace DiscordBot.Features.Fishing.Stages.Base;
 

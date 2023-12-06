@@ -1,4 +1,5 @@
-﻿using DiscordBot.Features.Fishing.Entities.Equipment;
+﻿using DiscordBot.Features.Fishing.Database.Entities;
+using DiscordBot.Features.Fishing.Database.Entities.Equipment;
 using Microsoft.EntityFrameworkCore;
 
 namespace DiscordBot.Features.Fishing.Database;

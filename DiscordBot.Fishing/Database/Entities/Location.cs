@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-namespace DiscordBot.Features.Fishing.Database;
+namespace DiscordBot.Features.Fishing.Database.Entities;
 
 [Index(nameof(Code), IsUnique = true)]
 internal class Location

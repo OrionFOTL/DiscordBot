@@ -1,12 +1,16 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
+using DiscordBot.Features.Fishing.Database.Entities.Equipment;
 using DiscordBot.Features.Fishing.State;
 using DiscordBot.Fishing.State;
 using Stateless;
 
-namespace DiscordBot.Features.Fishing.Database;
+namespace DiscordBot.Features.Fishing.Database.Entities;
 
 internal class GameState
 {
+    [NotMapped]
+    public StateMachine<StateEnum, Trigger> StateMachine { get; }
+
     public int Id { get; init; }
 
     public StateEnum State { get; private set; }
@@ -19,8 +23,7 @@ internal class GameState
 
     public Location? Location { get; set; }
 
-    [NotMapped]
-    public StateMachine<StateEnum, Trigger> StateMachine { get; }
+    public OwnedItem? ViewingOwnedItem { get; set; }
 
     public GameState(StateEnum state)
     {
@@ -47,12 +50,12 @@ internal class GameState
             .Permit(Trigger.ThrowLine, StateEnum.FishingInProgress);
 
         stateMachine.Configure(StateEnum.EquipmentView)
-            .Permit(Trigger.GoToMenu, StateEnum.MainMenu)
-            .Permit(Trigger.EquipmentTypeSelected, StateEnum.SpecificEquipmentSelection)
-            .Permit(Trigger.EquipmentConfirmed, StateEnum.OnLocation);
+            .Permit(Trigger.EquipmentItemSelected, StateEnum.EquipmentItemView)
+            .Permit(Trigger.GoToMenu, StateEnum.MainMenu);
 
-        stateMachine.Configure(StateEnum.SpecificEquipmentSelection)
-            .Permit(Trigger.SpecificEquipmentSelected, StateEnum.EquipmentView);
+        stateMachine.Configure(StateEnum.EquipmentItemView)
+            .Permit(Trigger.ViewEquipment, StateEnum.EquipmentView)
+            .Permit(Trigger.EquipItem, StateEnum.EquipmentView);
 
         stateMachine.Configure(StateEnum.FishListAtLocation)
             .Permit(Trigger.GoBack, StateEnum.OnLocation);

@@ -1,32 +1,25 @@
 ﻿using System.Text;
 using Discord;
-using DiscordBot.Features.Fishing.Database;
+using DiscordBot.Features.Fishing.Database.Entities;
+using DiscordBot.Features.Fishing.Database.Entities.Equipment;
+using DiscordBot.Features.Fishing.Database.Repositories;
 using DiscordBot.Features.Fishing.Embeds;
-using DiscordBot.Features.Fishing.Entities.Equipment;
 using DiscordBot.Features.Fishing.Services.StaticImages;
 using DiscordBot.Features.Fishing.Stages.Base;
 using DiscordBot.Features.Fishing.State;
-using Microsoft.EntityFrameworkCore;
 
 namespace DiscordBot.Features.Fishing.Stages.Equipment;
 
 internal interface IMainEquipmentViewStateHandler : IStateHandler;
 
 internal class MainEquipmentViewStateHandler(
-    DatabaseContext databaseContext,
+    IPlayerOwnedItemsRepository playerOwnedItemsRepository,
     IStaticImageFetcher staticImageFetcher,
     IEmbedFormatter embedFormatter) : IMainEquipmentViewStateHandler
 {
     public async Task Handle(IDiscordInteraction interaction, GameState gameState)
     {
-        var yourEquipment = (await databaseContext.OwnedItems
-            .Where(i => i.Player.Id == gameState.Player.Id)
-            .Include(i => i.Item)
-            .ToListAsync())
-            .GroupBy(i => i.GetType())
-            .OrderByDescending(grp => grp.Key == typeof(OwnedFishingRod))
-            .ThenByDescending(grp => grp.Key == typeof(OwnedBait))
-            .ToList();
+        var yourEquipment = await playerOwnedItemsRepository.GetPlayerOwnedItemsGroupedByType(gameState.Player);
 
         var itemSelectMenuOptions = yourEquipment.SelectMany(grp => grp).Select(ownedItem => new SelectMenuOptionBuilder
         {
@@ -44,7 +37,7 @@ internal class MainEquipmentViewStateHandler(
 
         var selectMenu = new SelectMenuBuilder
         {
-            CustomId = "equipmentItemSelected",
+            CustomId = nameof(Trigger.EquipmentItemSelected),
             Placeholder = "Select the item you'd like to inspect.",
             Options = itemSelectMenuOptions,
         };

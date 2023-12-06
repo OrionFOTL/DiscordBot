@@ -1,7 +1,7 @@
 using System.Reflection;
 using Discord.Interactions;
 
-namespace DiscordBot.Features.Fishing.SetupExtensions;
+namespace DiscordBot.Features.Fishing.Extensions.SetupExtensions;
 
 public static class FishingModuleRegistrationExtensions
 {

@@ -6,7 +6,7 @@ enum StateEnum
     LocationSelection,
     OnLocation,
     EquipmentView,
-    SpecificEquipmentSelection,
+    EquipmentItemView,
     FishListAtLocation,
     FishingInProgress,
     FishingResults

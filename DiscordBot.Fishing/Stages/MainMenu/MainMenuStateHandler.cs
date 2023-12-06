@@ -1,5 +1,5 @@
 ﻿using Discord;
-using DiscordBot.Features.Fishing.Database;
+using DiscordBot.Features.Fishing.Database.Entities;
 using DiscordBot.Features.Fishing.Embeds;
 using DiscordBot.Features.Fishing.Services.StaticImages;
 using DiscordBot.Features.Fishing.Stages.Base;

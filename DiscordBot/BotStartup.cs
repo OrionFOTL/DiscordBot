@@ -3,7 +3,7 @@ using Discord.Interactions;
 using Discord.WebSocket;
 using DiscordBot.Extensions;
 using DiscordBot.Features;
-using DiscordBot.Features.Fishing.SetupExtensions;
+using DiscordBot.Features.Fishing.Extensions.SetupExtensions;
 using Microsoft.Extensions.Options;
 
 namespace DiscordBot;

@@ -3,7 +3,7 @@ using Discord.Interactions;
 using Discord.WebSocket;
 using DiscordBot.Features.DailyStats.Job;
 using DiscordBot.Features.DailyStats.ServiceCollectionExtension;
-using DiscordBot.Features.Fishing.SetupExtensions;
+using DiscordBot.Features.Fishing.Extensions.SetupExtensions;
 using DiscordBot.Services.ArtGallery.Images;
 using DiscordBot.Services.ArtGallery.Source;
 using DiscordBot.Services.ArtGallery.Tags;

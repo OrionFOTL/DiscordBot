@@ -8,11 +8,10 @@ enum Trigger
     CastLine,
     FishCaught,
     ViewEquipment,
-    EquipmentTypeSelected,
-    SpecificEquipmentSelected,
-    EquipmentConfirmed,
+    EquipmentItemSelected,
     ViewFishAtLocation,
     GoBack,
     ThrowLine,
     FishingCompleted,
+    EquipItem,
 }

@@ -26,8 +26,8 @@ internal class ResourceImage
 
         while (true)
         {
-            yield return resourceImage4;
             yield return resourceImage2;
+            yield return resourceImage4;
             yield return resourceImage3;
             yield return resourceImage5;
         }

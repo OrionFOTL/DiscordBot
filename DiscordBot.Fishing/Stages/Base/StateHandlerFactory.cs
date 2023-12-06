@@ -22,6 +22,7 @@ internal class StateHandlerFactory(IServiceProvider serviceProvider) : IStateHan
             StateEnum.LocationSelection => serviceProvider.GetRequiredService<ILocationSelectionStateHandler>(),
             StateEnum.OnLocation => serviceProvider.GetRequiredService<IOnLocationStateHandler>(),
             StateEnum.EquipmentView => serviceProvider.GetRequiredService<IMainEquipmentViewStateHandler>(),
+            StateEnum.EquipmentItemView => serviceProvider.GetRequiredService<IEquipmentItemViewStateHandler>(),
         };
     }
 }
