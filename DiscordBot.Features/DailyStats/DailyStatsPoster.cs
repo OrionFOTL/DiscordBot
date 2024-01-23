@@ -36,11 +36,11 @@ internal class DailyStatsPoster(
 
         var startDate = DateTimeOffset.Now.AddDays(-1);
 
-        var topAuthors = (await userActivityAnalyser.GetMostActiveUsersByRecentPostsCount(filteredTextChannels, startDate))
+        var topAuthors = (await userActivityAnalyser.GetMostActiveUsers(filteredTextChannels, startDate))
             .Take(10)
             .ToList();
 
-        using Stream chartStream = dailyStatsChartProvider.GetDailyActivityChart(topAuthors);
+        using Stream chartStream = dailyStatsChartProvider.GetDailyActivityChart(topAuthors, userActivityAnalyser.Title);
 
         var postingChannel = await guild.GetTextChannelAsync(server.PostingChannelId);
 

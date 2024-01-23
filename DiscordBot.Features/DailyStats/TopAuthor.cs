@@ -4,7 +4,7 @@ namespace DiscordBot.Features.DailyStats;
 
 public record TopAuthor(User Author)
 {
-    public int MessageCount { get; set; }
+    public int Score { get; set; }
 }
 
 public record User(ulong Id, string Name)

@@ -6,14 +6,16 @@ namespace DiscordBot.Features.DailyStats.UserActivity;
 
 public interface IUserActivityAnalyser
 {
-    Task<IReadOnlyList<TopAuthor>> GetMostActiveUsersByRecentPostsCount(IEnumerable<ITextChannel> channels, DateTimeOffset oldestDate);
+    string Title { get; }
+
+    Task<IReadOnlyList<TopAuthor>> GetMostActiveUsers(IEnumerable<ITextChannel> channels, DateTimeOffset oldestDate);
 }
 
-internal class UserActivityAnalyser(
+internal abstract class UserActivityAnalyser(
     ILogger<UserActivityAnalyser> logger,
-    IRecentMessagesFetcher recentMessagesFetcher) : IUserActivityAnalyser
+    IRecentMessagesFetcher recentMessagesFetcher)
 {
-    public async Task<IReadOnlyList<TopAuthor>> GetMostActiveUsersByRecentPostsCount(IEnumerable<ITextChannel> channels, DateTimeOffset oldestDate)
+    public async Task<IReadOnlyList<TopAuthor>> GetMostActiveUsers(IEnumerable<ITextChannel> channels, DateTimeOffset oldestDate)
     {
         var topAuthors = new Dictionary<ulong, TopAuthor>();
 
@@ -23,13 +25,15 @@ internal class UserActivityAnalyser(
             {
                 await foreach (var message in recentMessagesFetcher.GetRecentMessages(channel, oldestDate))
                 {
+                    int score = CalculateScore(message);
+
                     if (topAuthors.TryGetValue(message.Author.Id, out var existingTopAuthor))
                     {
-                        existingTopAuthor.MessageCount++;
+                        existingTopAuthor.Score += score;
                     }
                     else
                     {
-                        topAuthors[message.Author.Id] = new TopAuthor(new User(message)) { MessageCount = 1 };
+                        topAuthors[message.Author.Id] = new TopAuthor(new User(message)) { Score = score };
                     }
                 }
             }
@@ -41,6 +45,26 @@ internal class UserActivityAnalyser(
 
         logger.LogInformation("Calculated {topAuthorsCount} top authors", topAuthors.Count);
 
-        return topAuthors.Values.OrderByDescending(a => a.MessageCount).ToList();
+        return topAuthors.Values.OrderByDescending(a => a.Score).ToList();
     }
+
+    protected abstract int CalculateScore(IMessage message);
+}
+
+internal class PostsCountUserActivityAnalyser(
+    ILogger<UserActivityAnalyser> logger,
+    IRecentMessagesFetcher recentMessagesFetcher) : UserActivityAnalyser(logger, recentMessagesFetcher), IUserActivityAnalyser
+{
+    public string Title => "Users with most messages in the last 24 hours";
+
+    protected override int CalculateScore(IMessage message) => 1;
+}
+
+internal class WordCountUserActivityAnalyser(
+    ILogger<UserActivityAnalyser> logger,
+    IRecentMessagesFetcher recentMessagesFetcher) : UserActivityAnalyser(logger, recentMessagesFetcher), IUserActivityAnalyser
+{
+    public string Title => "Users with most words in the last 24 hours";
+
+    protected override int CalculateScore(IMessage message) => message.Content.Split(' ').Length;
 }

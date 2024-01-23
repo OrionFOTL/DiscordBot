@@ -10,14 +10,14 @@ namespace DiscordBot.Features.DailyStats.Charting;
 
 public interface IDailyStatsChartProvider
 {
-    Stream GetDailyActivityChart(IReadOnlyList<TopAuthor> ranking);
+    Stream GetDailyActivityChart(IReadOnlyList<TopAuthor> ranking, string title);
 }
 
 internal class DailyStatsChartProvider : IDailyStatsChartProvider
 {
     private static SolidColorPaint BlackOpenSansPaint => new(SKColors.Black) { SKTypeface = SKTypeface.FromFamilyName("Open Sans") };
 
-    public Stream GetDailyActivityChart(IReadOnlyList<TopAuthor> ranking)
+    public Stream GetDailyActivityChart(IReadOnlyList<TopAuthor> ranking, string title)
     {
         var barChart = new SKCartesianChart()
         {
@@ -25,13 +25,13 @@ internal class DailyStatsChartProvider : IDailyStatsChartProvider
             Height = 500,
             Title = new LabelVisual()
             {
-                Text = "Users with most messages in the last 24 hours",
+                Text = title,
                 VerticalAlignment = Align.Start,
                 Padding = new() { Top = 10 },
                 TextSize = 20,
                 Paint = BlackOpenSansPaint,
             },
-            Series = GetColumnSeries(ranking.Select(ta => ta.MessageCount)).ToList(),
+            Series = GetColumnSeries(ranking.Select(ta => ta.Score)).ToList(),
             XAxes =
             [
                 new Axis
@@ -56,7 +56,7 @@ internal class DailyStatsChartProvider : IDailyStatsChartProvider
                     SubseparatorsPaint = new SolidColorPaint(SKColors.LightGray) { PathEffect = new DashEffect([7, 3]) },
                     SeparatorsPaint = new SolidColorPaint(SKColors.DarkGray),
                 }
-            ]
+            ],
         };
 
         return barChart.GetImage().Encode().AsStream();

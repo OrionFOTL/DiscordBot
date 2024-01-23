@@ -17,7 +17,7 @@ public static class DailyStatsServiceCollectionExtension
                 .AddAndValidateOptions<DailyStatsConfig>();
 
         services.AddTransient<IDailyStatsPoster, DailyStatsPoster>()
-                .AddTransient<IUserActivityAnalyser, UserActivityAnalyser>()
+                .AddTransient<IUserActivityAnalyser, WordCountUserActivityAnalyser>()
                 .AddTransient<IDailyStatsChartProvider, DailyStatsChartProvider>()
                 .AddTransient<IRecentMessagesFetcher, RecentMessagesFetcher>()
                 .AddTransient<IMessageFormatter, MessageFormatter>();
